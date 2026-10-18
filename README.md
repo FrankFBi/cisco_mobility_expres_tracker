@@ -71,6 +71,33 @@ A **disabled** tracker is deleted once its client hasn't been seen on the contro
 
 Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`) and *Band* (`FB`). They are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
 
+### Locating a person by access point
+
+The tracker is mainly used to find out where a person is, using their phone's Wi-Fi connection. The `home`/`not_home` state shows whether the phone is on the network. The `AP` attribute shows **which access point** the phone is connected to, e.g. `AP3-Garage`. Give your APs room names on the controller, and `AP` then tells you which part of the house the person is in. It updates on every 30-second poll and is gone while the phone is disconnected.
+
+Read it in a template:
+
+```jinja
+{{ state_attr('device_tracker.franks_phone', 'AP') }}
+```
+
+On an enabled tracker, the device's *Access point* sensor has the same value as a state, so it can be used directly in history graphs and triggers:
+
+```yaml
+automation:
+  - alias: Garage light on when Frank's phone joins the garage AP
+    triggers:
+      - trigger: state
+        entity_id: sensor.franks_phone_access_point
+        to: AP3-Garage
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.garage
+```
+
+Phones sometimes stay on a distant AP, and they can switch between two nearby APs. So read the AP as a rough indication of the room, not an exact location.
+
 ## Development
 
 ```bash
