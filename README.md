@@ -2,7 +2,7 @@
 
 Presence detection for clients of a [Cisco Mobility Express](https://www.cisco.com/c/en/us/solutions/enterprise-networks/mobility-express/index.html) wireless controller.
 
-This is a config-entry (UI) port of the core `cisco_mobility_express` integration. That integration uses the legacy `device_tracker` platform API, which [is deprecated and will be removed in Home Assistant 2027.5](https://developers.home-assistant.io/blog/2026/04/20/legacy-device-tracker-deprecation/). This version uses the modern `ScannerEntity` API and keeps the same domain, so it replaces the core integration once installed.
+This is a config-entry (UI) port of the core [`cisco_mobility_express`](https://www.home-assistant.io/integrations/cisco_mobility_express/) integration. That integration uses the legacy `device_tracker` platform API, which [is deprecated and will be removed in Home Assistant 2027.5](https://developers.home-assistant.io/blog/2026/04/20/legacy-device-tracker-deprecation/). This version uses the modern `ScannerEntity` API and keeps the same domain, so it replaces the core integration once installed.
 
 ## Installation
 
