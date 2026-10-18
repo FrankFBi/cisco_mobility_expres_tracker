@@ -19,6 +19,7 @@ from .coordinator import (
     CiscoMEConfigEntry,
     CiscoMEDataUpdateCoordinator,
 )
+from .devices import async_sync_client_devices
 
 
 def create_controller(data: dict) -> CiscoMobilityExpress:
@@ -44,6 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> b
     coordinator = CiscoMEDataUpdateCoordinator(hass, entry, controller)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    async_sync_client_devices(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True

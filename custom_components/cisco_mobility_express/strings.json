@@ -34,5 +34,24 @@
       "already_configured": "This controller is already configured",
       "reauth_successful": "Reauthentication was successful"
     }
+  },
+  "entity": {
+    "sensor": {
+      "ipv4": {
+        "name": "IPv4 address"
+      },
+      "access_point": {
+        "name": "Access point"
+      },
+      "ssid": {
+        "name": "SSID"
+      },
+      "protocol": {
+        "name": "Protocol"
+      },
+      "band": {
+        "name": "Band"
+      }
+    }
   }
 }
