@@ -71,6 +71,51 @@ A **disabled** tracker is deleted once its client hasn't been seen on the contro
 
 Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`) and *Band* (`FB`). They are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
 
+### Locating a person by access point
+
+The tracker is mainly used to find out where a person is, using their phone's Wi-Fi connection. The `home`/`not_home` state shows whether the phone is on the network. The `AP` attribute shows **which access point** the phone is connected to, e.g. `AP3-Garage`. Give your APs room names on the controller, and `AP` then tells you which part of the house the person is in. It updates on every 30-second poll and is gone while the phone is disconnected.
+
+Read it in a template:
+
+```jinja
+{{ state_attr('device_tracker.franks_phone', 'AP') }}
+```
+
+On an enabled tracker, the device's *Access point* sensor has the same value as a state, so it can be used directly in history graphs and triggers:
+
+```yaml
+automation:
+  - alias: Garage light on when Frank's phone joins the garage AP
+    triggers:
+      - trigger: state
+        entity_id: sensor.franks_phone_access_point
+        to: AP3-Garage
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.garage
+```
+
+A common use is turning off heating in a room nobody is in. Here the office heater turns off once Frank's phone has been off the office AP for 10 minutes. That covers both moving to another AP and leaving the house, since the sensor is `unknown` while the phone is disconnected:
+
+```yaml
+automation:
+  - alias: Office heater off when Frank has left the office
+    triggers:
+      - trigger: state
+        entity_id: sensor.franks_phone_access_point
+        from: AP2-Office
+        for: "00:10:00"
+    actions:
+      - action: climate.turn_off
+        target:
+          entity_id: climate.office_heater
+```
+
+The `for` delay is a buffer for walking through another room, so the heater stays on when you're only passing through.
+
+This works well because the data comes from a controller (WLC or Mobility Express). The controller decides which AP each client is associated with, and with controller-based roaming (e.g. *Optimized Roaming*) it moves a phone to the nearest AP as it moves. Standalone APs often lack this, and their phones can stay on a distant AP. To get a reliable room location, enable roaming on the controller and place the APs so each room or zone has its own.
+
 ## Development
 
 ```bash
