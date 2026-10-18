@@ -1,0 +1,38 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cisco Mobility Express controller",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "host": "The IP address or hostname of your controller, for example 192.168.10.150.",
+          "username": "A user with administrative privileges.",
+          "verify_ssl": "Turn off if the controller uses a self-signed certificate."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate",
+        "description": "The controller at {host} rejected the stored credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the controller",
+      "invalid_auth": "Invalid username or password",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This controller is already configured",
+      "reauth_successful": "Reauthentication was successful"
+    }
+  }
+}
