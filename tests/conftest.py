@@ -59,4 +59,8 @@ def mock_controller() -> Generator[MagicMock]:
         controller = controller_cls.return_value
         controller.is_logged_in.return_value = True
         controller.get_associated_devices.return_value = [PHONE, LAPTOP]
+        # Mobility Express without the classic detail page by default.
+        controller.host_api_url = "http://192.168.10.150"
+        controller.session = MagicMock()
+        controller.session.get.return_value = MagicMock(status_code=404, text="")
         yield controller_cls

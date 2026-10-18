@@ -7,6 +7,7 @@ from homeassistant.const import Platform
 DOMAIN = "cisco_mobility_express"
 PLATFORMS = [Platform.DEVICE_TRACKER]
 SCAN_INTERVAL = timedelta(seconds=30)
+DETAILS_INTERVAL = timedelta(minutes=5)
 
 DEFAULT_SSL = False
 DEFAULT_VERIFY_SSL = True
