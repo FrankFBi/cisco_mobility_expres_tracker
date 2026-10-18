@@ -54,6 +54,7 @@ async def test_setup_and_tracking(
     assert phone.attributes["mac"] == "aa:bb:cc:dd:ee:01"
     assert phone.attributes["host_name"] == "frank-phone"
     assert phone.attributes["SSID"] == "home"
+    assert phone.attributes["PT"] == "802.11ac"
     assert hass.states.get(LAPTOP_ENTITY).state == STATE_HOME
 
     mock_controller.return_value.get_associated_devices.return_value = [LAPTOP]

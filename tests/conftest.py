@@ -27,7 +27,7 @@ ENTRY_DATA = {
 Device = namedtuple("Device", ["macaddr", "clId", "ip", "SSID", "PT", "controller"])
 
 PHONE = Device(
-    "AA:BB:CC:DD:EE:01", "frank-phone", "192.168.10.20", "home", "802.11ac", "192.168.10.150"
+    "AA:BB:CC:DD:EE:01", "frank-phone", "192.168.10.20", "home", "802.11ac  ", "192.168.10.150"
 )
 LAPTOP = Device("aa:bb:cc:dd:ee:02", "", "192.168.10.21", "home", "802.11ax", "192.168.10.150")
 

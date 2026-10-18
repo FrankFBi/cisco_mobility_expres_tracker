@@ -67,7 +67,11 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
 
         _LOGGER.debug("Cisco Mobility Express controller returned: %s", devices)
         clients = {
-            format_mac(device[ATTR_MAC]): device for device in (dev._asdict() for dev in devices)
+            format_mac(device[ATTR_MAC]): {
+                key: value.strip() if isinstance(value, str) else value
+                for key, value in device.items()
+            }
+            for device in (dev._asdict() for dev in devices)
         }
         if self._details_supported:
             await self._async_update_details(clients)
