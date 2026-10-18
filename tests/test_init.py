@@ -59,7 +59,7 @@ async def test_setup_and_tracking(
     mock_controller.return_value.get_associated_devices.return_value = [LAPTOP]
     freezer.tick(SCAN_INTERVAL)
     async_fire_time_changed(hass)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
     phone = hass.states.get(PHONE_ENTITY)
     assert phone.state == STATE_NOT_HOME
@@ -85,7 +85,7 @@ async def test_new_client_creates_entity(
     mock_controller.return_value.get_associated_devices.return_value = [PHONE]
     freezer.tick(SCAN_INTERVAL)
     async_fire_time_changed(hass)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
     entries = er.async_entries_for_config_entry(er.async_get(hass), mock_config_entry.entry_id)
     assert [e.unique_id for e in entries] == ["aa:bb:cc:dd:ee:01"]
@@ -125,5 +125,5 @@ async def test_poll_failure_marks_unavailable(
     mock_controller.return_value.get_associated_devices.side_effect = TypeError()
     freezer.tick(SCAN_INTERVAL)
     async_fire_time_changed(hass)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get(PHONE_ENTITY).state == "unavailable"

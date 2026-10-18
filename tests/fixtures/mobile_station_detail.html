@@ -1,0 +1,3215 @@
+
+<html>
+<head>
+<meta http-equiv="Pragma" content="no-cache">
+<meta HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<title>Mobile Station Detail</title>
+<link rel="stylesheet" href="../../styles/content41.css" type="text/css">
+<script language="javascript" src="../../servicescript41.js"></script>
+<script language="javascript" src="../../dojo/dojo.js"></script>
+<script language="JavaScript" src="../aaa/selectbox.js"></script>
+<link class="include" rel="stylesheet" type="text/css" href="../../javascript/jquery.jqplot.min.css" />
+<!--[if lt IE 9]><script language="javascript" type="text/javascript" src="../../javascript/excanvas.min.js"></script><![endif]-->
+<script class="include" type="text/javascript" src="../../javascript/jquery.min.js"></script>
+<script class="include" type="text/javascript" src="../../javascript/jquery.jqplot.min.js"></script>
+<script class="include" language="javascript" type="text/javascript" src="../../javascript/jqplot.pieRenderer.min.js"></script>
+<script class="include" language="javascript" type="text/javascript" src="../../javascript/jqplot.highlighter.min.js"></script>
+</head>
+<script>
+drawHeader();
+var AP_MODE_REMOTE=2; //SPAM_AP_MODE_REMOTE
+
+function flexVlanTemplateCheck() {
+  
+   if(document.forms[0].is_VLAN_Template_client.value == 1) {
+      document.getElementById("ms_interface_show").style.display = "none";
+      document.getElementById("flex_vlan_name_show").style.display = "";
+   } else {
+      document.getElementById("ms_interface_show").style.display = "";
+      document.getElementById("flex_vlan_name_show").style.display = "none";
+   } 
+}
+
+function refreshForm(){
+window.setTimeout(screen_refresh,90000);
+}
+
+function showDataSwitching() {
+	if (document.forms[0].apMode.value != AP_MODE_REMOTE) {
+        document.getElementById("dataSwitching_id").style.display ="none";
+    } else {
+		document.getElementById("dataSwitching_id").style.display ="block";
+    }
+}
+
+function showUAPSD() {
+	if (document.forms[0].wme_state.value == "Disabled") {
+        document.getElementById("uapsd_id").style.display ="none";
+    } else {
+		document.getElementById("uapsd_id").style.display ="block";
+    }
+}
+
+function showCcxv5Buttons() {
+	if ((document.forms[0].ms_ccx.value == "CCXv5")||((document.forms[0].ms_ccx.value == "CCXv6")&&(document.forms[0].ms_ccx_mgmt.value == "v2"))) {
+		document.getElementById("ccxv5").style.display ="block";
+    } else {
+        	document.getElementById("ccxv5").style.display ="none";
+    }
+}
+
+function custom3Action() {
+	 	document.forms[0].buttonClicked.value = CUSTOM3_CLICKED;
+                debugMsg("<editAction> Calling submit");
+                document.forms[0].submit();
+}
+
+function custom4Action() {
+        document.forms[0].buttonClicked.value = CUSTOM4_CLICKED;
+        debugMsg("<editAction> Calling submit");
+        document.forms[0].submit();
+}
+function popup1() {
+        var str=document.forms[0].ccxv5_disp.value;
+        if(str == 3){
+	        alert("Send Request Not Sent");
+                return false;
+	}
+}
+
+function popup2() {
+	var str=document.forms[0].ccxv5_disp.value;
+	if(str == 1){
+		alert("Your Request is being processed.Try after few seconds.");
+                return false;
+	}
+}
+
+function showWgb(){
+	document.getElementById("wgbparent").style.display = "none";
+	document.getElementById("wgbclients").style.display = "none";
+	if(document.forms[0].client_type.value == "WGB Client")
+			document.getElementById("wgbparent").style.display = "inline";
+	else if(document.forms[0].client_type.value == "WGB")
+			document.getElementById("wgbclients").style.display = "inline";
+}
+
+function showPmip(){
+        
+}
+function showTunnel(){
+
+    document.getElementById("gtpv2clients").style.display = "none";
+    document.getElementById("eogreclients").style.display = "none";
+    if(document.forms[0].client_type_tunnel.value == "GTPv2"){
+       document.getElementById("gtpv2clients").style.display = "inline";
+    }else if(document.forms[0].client_type_tunnel.value == "EoGRE"){
+       document.getElementById("eogreclients").style.display = "inline";
+    }
+
+}
+
+function performLinkTest(){
+	document.getElementById('client_mac').value = document.forms[0].ms_addr.value;
+	if(document.forms[0].is_wgb_client.value == 1)
+		document.getElementById('lt_src_page').value = 2;  //2 indicates linktest performed from Wired Clients Detail page
+	else
+		document.getElementById('lt_src_page').value = 3;  //3 indicates linktest performed from Client details page
+	document.client_linkTest.submit();
+	showWaitDlg();
+}
+
+function showCcxV6() {
+	if (document.forms[0].ms_ccx.value == "CCXv6"){
+		document.getElementById("ccxv6").style.display ="block";
+    } else {
+        	document.getElementById("ccxv6").style.display ="none";
+    }
+}
+function selectList()
+{
+
+ 
+}
+
+function getNoOfApps()
+{
+
+ 
+}
+function clearAvcStats()
+{
+
+ 
+}
+
+function showNasid()
+{
+    var nasidtext = document.forms[0].nasid;
+     if(45 >= nasidtext.value.length){
+           nasidtext.style.height ="20px";  
+    }else if( 90 >= nasidtext.value.length){
+           nasidtext.style.height ="40px";
+    }else if(135 >= nasidtext.value.length){
+           nasidtext.style.height ="60px";
+    }else if(180 >= nasidtext.value.length){
+           nasidtext.style.height ="80px";
+    }else if(225 >= nasidtext.value.length){
+           nasidtext.style.height ="100px";
+    }else{
+           nasidtext.style.height ="120px";
+    }
+}
+
+//dojo does not work if dojo.js is placed inside head section and body has onload functions.
+/*One solution is to have dojo.js included in client_linkTest_results.html
+(which will be inside body)and keep the onload functions in the body itself.
+One problem with this is client list page has 2 htmls included and both of
+them require dojo.js. So the solution is to not have any functions onload 
+and place dojo.js in head section*/
+
+function OnLoadFn(){
+showDataSwitching();showUAPSD();showCcxv5Buttons();showWgb();showCcxV6();showPmip();showTunnel();CheckError();refreshForm();flexVlanTemplateCheck();validatePerc("dynamic_data",4);validatePerc("dynamic_data_c",3);validatePerc("dynamic_data1",5);validatePerc("dynamic_data1_c",3);validatePerc("dynamic_data2",5);validatePerc("dynamic_data2_c",3);showNasid();
+}
+
+dojo.require("dojo.widget.TabContainer");
+dojo.require("dojo.widget.LinkPane");
+dojo.require("dojo.widget.ContentPane");
+dojo.require("dojo.widget.LayoutContainer");
+dojo.addOnLoad(OnLoadFn);
+
+</script>
+
+
+<body class =" bodyattributes">
+<SCRIPT>
+function getExcluded(){
+	if(document.forms[0].excluded_list.value == "1")
+        document.writeln('\
+            Excluded \
+            ');
+}
+</SCRIPT>
+<body>
+<FORM method="post" ACTION="/screens/apf/mobile_station_detail.html">
+<INPUT TYPE="hidden" NAME="excluded_list" SIZE="2" MAXLENGTH="2" VALUE="0">
+<INPUT TYPE="hidden" NAME="apMode" SIZE="2" MAXLENGTH="2" VALUE="2">
+<INPUT TYPE="hidden" NAME="ccxv5_disp" SIZE="2" MAXLENGTH="2" VALUE="0">
+<INPUT name="query_str" size="512" maxlength="512" type="hidden" VALUE="">
+<INPUT TYPE="hidden" NAME="access_control" SIZE="16" MAXLENGTH="15" VALUE="1">
+<INPUT TYPE="hidden" NAME="csrf_token" SIZE="32" MAXLENGTH="32" VALUE="TOKEN">
+
+  <table CELLSPACING=0  WIDTH =" 100%" nowrap cellpadding="0" border="0">
+
+    <tr>
+      <td class =" pageTitle" nowrap>
+        <h1><script>getExcluded();</script> Clients &gt; Detail</h1>
+      </td>
+      <td class =" pageTitle" nowrap align="right">
+        <script>getHtmlForBackButton();</script>
+        
+        <script>getHtmlForButton("linktest","Link Test","button","performLinkTest()"); </script>
+        <script>getHtmlForCustom2ButtonOnPage("Remove");</script>
+	 <script>getHtmlForHelpButton("Clients_Detail","/helppages/wwhelp.htm");</script>
+      </td>
+    </tr>
+  </table>
+
+ 
+	<div id="ccxv5" style="display: none;">
+	<table nowrap="" border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tr>
+	<td class="pageTitle" align="right" nowrap="nowrap">
+         <script>getHtmlForButton("ccxv5_send","Send CCX Req","buttonStretch","custom4Action()");</script>
+         <script>getHtmlForButton("ccxv5_display","Display","buttonStretch","custom3Action()");</script>
+	</td>
+	</tr>
+    </table>
+    </div>
+
+<!-- main tab -->
+<div id="mainTabContainer" dojoType="TabContainer" templateCssPath="/styles/HtmlTabContainer.css" style="width: 100%;height:100%;overflow:auto;" selectedTab="general_tab">
+<div id="general_tab" dojoType="ContentPane" label="General" style="width: 100%;height:100%;overflow:auto;">
+<div class="tabcontent">
+ <table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+   <td width="1200" valign="top">
+   <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td colspan="2" class="label1">Client Properties</td>
+  </tr>
+  <tr>
+   <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+  </tr>
+  <tr>
+    <td class="label2" width="142"> MAC Address</td>
+   <td>
+      <INPUT type=TEXT name="ms_addr" class="statictextboxlist" readonly SIZE="20" MAXLENGTH="19" VALUE="94:27:70:d0:09:75">
+    </td>
+
+  </tr>
+  <tr>
+    <td class="label2" >IPv4 Address</td>
+    <td>
+      <INPUT type=TEXT name="ms_ipaddr" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="10.104.28.157">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" valign="top">IPv6 Address</td>
+    <td class="list">
+	<TEXTAREA name="ms_ipaddr6" readonly class="statictextbox" style="resize:none" value="" disabled ROWS="4" COLS="45">fddb:0:104:28:9627:70ff:fed0:975, fe80::9627:70ff:fed0:975, </TEXTAREA>
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" > Client Type</td>
+    <td>
+      <INPUT type=TEXT name="client_type" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Regular">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" > Client Tunnel Type </td>
+    <td>
+     <INPUT type="Text" name="client_type_tunnel" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Simple IP">
+    </td>
+  </tr>
+  <tr>
+   <td colspan="2">
+     <div id="wgbparent" style="display:none">
+		  <table cellSpacing=0 cellPadding=0 border=0>
+		    <TBODY>
+	<TR>
+	   <TD class=label2 align=left width=170>WGB MAC Address</TD>
+	   <td>
+					<INPUT type=TEXT name="wgb_macAddr" class="statictextboxlist" readonly SIZE="20" MAXLENGTH="19" VALUE="">
+			   </td>
+			</TR>
+			</TBODY>
+		   </table>
+		  </div>
+   </td>
+  </tr>
+  <tr>
+   <td colspan="2">
+     <div id="wgbclients" style="display:none">
+		  <table cellSpacing=0 cellPadding=0 border=0>
+		    <TBODY>
+	<TR>
+	   <TD class=label2 align=left width=170>Number of Wired Client(s)</TD>
+	   <td>
+		 <INPUT type=TEXT name="wgb_clients" class="statictextboxlist" readonly disabled SIZE="4" MAXLENGTH="3" VALUE="0">
+	   </td>
+			</TR>
+			</TBODY>
+		   </table>
+		  </div>
+   </td>
+  </tr>
+  <tr>
+    <td class="label2" > User Name</td>
+
+    <td>
+      <INPUT type=TEXT name="ms_user" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" > Webauth User Name</td>
+
+    <td>
+      <INPUT type=TEXT name="webauth_user" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="None">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" > Port Number</td>
+    <td>
+      <INPUT type=TEXT name="ms_port" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="1">
+    </td>
+  </tr>
+
+           <tr id = "ms_interface_show" style="display:none">
+              <td class="label2"> Interface</td>
+              <td>
+              <INPUT type=TEXT name="ms_interface" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="N/A">
+              </td>
+           </tr>
+          
+            <tr id ="flex_vlan_name_show" style="display:none">
+             <td class="label2">Flex VLAN Name</td>
+             <td>
+             <INPUT type=TEXT name="ms_flex_vlan_name" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="32" VALUE="N/A">
+             </td>
+          </tr>
+        
+  <tr>
+    <td class="label2" > VLAN ID</td>
+    <td>
+      <INPUT type=TEXT name="ms_vlan" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="28">
+    </td>
+  </tr>
+
+ <tr>
+    <td class="label2" > Quarantine VLAN ID</td>
+    <td>
+      <INPUT type=TEXT name="ms_quan_vlan" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="0">
+    </td>
+  </tr>
+
+	  <!--ccx version -->
+  </tr>
+    <td class="label2" > CCX Version</td>
+    <td>
+			<INPUT type=TEXT name="ms_ccx" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="Not Supported">
+    </td>
+ 
+  </tr>
+	  <!--e2e version version -->
+  </tr>
+    <td class="label2" > E2E Version</td>
+    <td>
+			<INPUT type=TEXT name="ms_e2e" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="Not Supported">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Mobility Role</td>
+    <td>
+      <INPUT type=TEXT name="ms_mobility" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Local">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Mobility Peer IP Address</td>
+    <td>
+      <INPUT type=TEXT name="ms_peer" class="statictextboxlist" readonly disabled SIZE="50" MAXLENGTH="50" VALUE="N/A">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Mobility Move Count</td>
+    <td>
+      <INPUT type=TEXT name="ms_move_count" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Policy Manager State</td>
+    <td>
+      <INPUT type=TEXT name="ms_policy_state" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="RUN">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Management Frame Protection</td>
+    <td>
+			<INPUT type=TEXT name="mfpStatus" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="No">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >UpTime (Sec)</td>
+    <td>
+			<INPUT type=TEXT name="up_time" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="87245">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Current TxRateSet</td>
+    <td>
+			<INPUT type=TEXT name="data_rate" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="m9 ss2">
+    </td>
+  </tr>
+  </tr>
+    <td class="label2" >Data RateSet</td>
+    <td class="list">
+	<TEXTAREA name="rate_set" id="rate_set" class="statictextbox" READONLY style="resize:none" disabled ROWS="2" COLS="30">6.0,9.0,12.0,18.0,24.0,36.0,48.0,54.0</TEXTAREA>
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >KTS CAC Capability</td>
+    <td>
+	<INPUT type=TEXT name="ktsCacCapability" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="No">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" > 802.11u</td>
+    <td>
+      <INPUT type=TEXT name="dot11u_capable" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="Not Supported">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >802.11v BSS Transition</td>
+    <td>
+      <INPUT type=TEXT name="dot11v_bss_trans" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="32" VALUE="Not Supported">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Fastlane Client</td>
+    <td>
+      <INPUT type=TEXT name="flan_client" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="No">
+    </td>
+  </tr>
+  <tr>
+      <td class="label2">U3 Interface</td>
+      <td>
+        <INPUT type=TEXT name="clientU3Int" id="clientU3Int" class="statictextboxlist" readonly disabled SIZE="8" MAXLENGTH="8" VALUE="Disabled">
+      </td>
+   </tr>
+  <tr>
+      <td class="label2">Nas Identifier</td>
+      <td>
+        <TEXTAREA name="nasid" id="nasid" class="statictextbox" readonly style="resize:none" value="" disabled ROWS="1" COLS="48">fbiwlc1</TEXTAREA>
+      </td>
+   </tr>
+
+
+
+  <tr>
+  <td colspan="2">
+    <div id="ccxv6" style="display:none">
+      <table cellSpacing=0 cellPadding=0 border=0>
+	<TBODY>
+	  <tr>
+	    <td colspan="2" class="label1">CCX Details</td>
+	  </tr>
+	  <tr>
+	    <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+	  </tr>
+	  <tr>
+	    <td class="label2" width="142" >Foundation Service</td>
+	    <td>
+	      <INPUT type=TEXT name="ms_ccx_fnd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="none">
+	    </td>
+	 </tr>
+	  <tr>
+	    <td class="label2" width="142" >Location Version</td>
+	    <td>
+	      <INPUT type=TEXT name="ms_ccx_loc" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="none">
+	    </td>
+	 </tr>
+	  <tr>
+	    <td class="label2" width="142" >Voice Service</td>
+	    <td>
+	      <INPUT type=TEXT name="ms_ccx_vox" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="none">
+	    </td>
+	 </tr>
+	  <tr>
+	    <td class="label2" width="142" >Management Service</td>
+	    <td>
+	      <INPUT type=TEXT name="ms_ccx_mgmt" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="none">
+	    </td>
+	 </tr>
+       </TBODY>
+     </table>
+   </div>
+   </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" class="label1">Security Information</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Security Policy Completed</td>
+    <td>
+      <INPUT type=TEXT name="ms_security_done" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Yes">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" width="142" >Policy Type</td>
+    <td>
+      <INPUT type=TEXT name="wpa_version" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="WPA2">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" width="142" >Auth Key Mgmt</td>
+    <td>
+      <INPUT type=TEXT name="keymgmt" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="PSK">
+    </td>   </tr>
+
+  <tr>
+    <td class="label2" >Encryption Cipher</td>
+    <td>
+      <INPUT type=TEXT name="wpa_encrypt_type" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="CCMP-128 (AES)">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Protected Management Frame</td>
+    <td>
+      <INPUT type=TEXT name="pmf" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="No">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >EAP Type</td>
+    <td>
+      <INPUT type=TEXT name="eap_type" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="N/A">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >SNMP NAC State</td>
+    <td>
+      <INPUT type=TEXT name="nac_state" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Access">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Radius NAC State</td>
+    <td>
+      <INPUT type=TEXT name="posture_state" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="N/A">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >CTS Security Group Tag</td>
+    <td>
+      <INPUT type=TEXT name="cts_sxp_sgt" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unknown(0)">
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="label2" >Redirect URL</td>
+    <td>
+      <INPUT type=TEXT name="url" class="statictextboxlist" readonly disabled SIZE="50" MAXLENGTH="254" VALUE="none">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Pre-auth IPv4 ACL Name</td>
+    <td>
+      <INPUT type=TEXT name="preauth_acl" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Pre-auth IPv4 ACL Applied Status</td>
+    <td>
+      <INPUT type=TEXT name="preauth_applied_acl" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Pre-auth IPv6 ACL Name</td>
+    <td>
+      <INPUT type=TEXT name="preauth_acl_ipv6" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Pre-auth IPv6 ACL Applied Status</td>
+    <td>
+      <INPUT type=TEXT name="preauth_applied_acl_ipv6" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >FlexConnect Pre-auth Ipv4 Acl Name</td>
+    <td>
+      <INPUT type=TEXT name="flex_pre_auth_ipv4_acl" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >FlexConnect Pre-auth Ipv4 Acl Applied Status</td>
+    <td>
+      <INPUT type=TEXT name="flex_pre_auth_ipv4_acl_applied" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >FlexConnect Pre-auth Ipv6 Acl Name</td>
+    <td>
+      <INPUT type=TEXT name="flex_pre_auth_ipv6_acl" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >FlexConnect Pre-auth Ipv6 Acl Applied Status</td>
+    <td>
+      <INPUT type=TEXT name="flex_pre_auth_ipv6_acl_applied" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Post-auth IPv4 Acl Name/Flex post-auth IPv4 ACL name</td>
+    <td>
+      <INPUT type=TEXT name="acl_normal" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Post-auth IPv4 ACL Applied Status</td>
+    <td>
+      <INPUT type=TEXT name="applied_acl_normal" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Flex post-auth IPv4 acl applied status</td>
+    <td>
+      <INPUT type=TEXT name="flex_applied_acl" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable">
+    </td>
+  </tr>
+  <tr>
+	<td class="label2">Post-auth IPv6 ACL Name</td>
+	<td><INPUT type="text" name="ipv6_acl_name" class="statictextboxlist" readonly disabled SIZE="33" MAXLENGTH="32" VALUE="none"></td>
+  </tr>
+
+  <tr>
+	<td class="label2">Post-auth IPv6 ACL Applied Status</td>
+	<td><INPUT type="text" name="ipv6_applied_acl_status" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable"></td>
+  </tr>
+  <tr>
+    <td class="label2" >FlexConnect Post-auth Ipv6 Acl Name</td>
+    <td>
+      <INPUT type=TEXT name="flex_post_auth_ipv6_acl" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >FlexConnect Post-auth Ipv6 Acl Applied status</td>
+    <td>
+      <INPUT type=TEXT name="flex_post_auth_ipv6_acl_applied" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="Unavailable">
+    </td>
+  </tr>
+ 
+    
+      <tr>
+       <td class="label2" >Layer2 ACL Name</td>
+         <td>
+      <INPUT type=TEXT name="layer2_acl_name" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+       </td>
+     </tr>
+    
+     <tr>
+       <td class="label2" >Layer2 ACL Applied Status</td>
+         <td>
+      <INPUT type=TEXT name="layer2_acl_status" class="statictextboxlist" readonly disabled SIZE="12" MAXLENGTH="12" VALUE="Unavailable">
+         </td>
+     </tr>
+      <tr>
+       <td class="label2" >URL ACL Name</td>
+         <td>
+      <INPUT type=TEXT name="url_acl_name" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+       </td>
+     </tr>
+    
+     <tr>
+       <td class="label2" >URL ACL Applied Status</td>
+         <td>
+      <INPUT type=TEXT name="url_acl_status" class="statictextboxlist" readonly disabled SIZE="12" MAXLENGTH="12" VALUE="Unavailable">
+         </td>
+     </tr>
+
+    <tr>
+      <td class="label2" >mDNS Status</td>
+      <td>
+         <INPUT type=TEXT name="bonjour_status" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Disabled">
+      </td>
+    </tr>
+  <tr>
+    <td class="label2" >mDNS Profile Name</td>
+    <td>
+      <INPUT type=TEXT name="bonjour_profile" class="statictextboxlist" readonly disabled SIZE="40" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+  <tr>
+     <td class="label2">mDNS Service Advertisement Count </td>
+     <td>
+      <INPUT type=TEXT name="bonjour_service_count" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+     </td>
+  </tr>
+
+		  <tr>
+			<td class="label2">AAA Role Type</td>
+			<td><INPUT type="text" name="role_type" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="none"></td>
+		  </tr>
+
+		  <tr>
+			<td class="label2">Local Policy Applied</td>
+			<td><INPUT type="text" name="policy_name" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="none"></td>
+		  </tr>
+ 
+  <tr>
+    <td class="label2" >OpenDNS Profile Name</td>
+    <td>
+      <INPUT type=TEXT name="openDNS_Profile_Name" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="32" VALUE="none">
+    </td>
+  </tr>
+
+<tr>
+<td class="label2">iPSK Tag</td>
+<td><INPUT type="text" name="ipsk_tag" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="31" VALUE="N/A"></td>
+</tr>
+<tr>
+<td class="label2">User Authenticated by</td>
+<td><INPUT type="text" name="user_authentication" class="statictextboxlist" readonly disabled SIZE="32" VALUE="None"></td>
+</tr>
+  <tr>
+    <td colspan="2" class="label1">Quality of Service Properties</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+  </tr>
+  <tr>
+    <td class="label2" width="142" >WMM State</td>
+    <td>
+      <INPUT type=TEXT name="wme_state" class="statictextboxlist" readonly SIZE="16" MAXLENGTH="15" VALUE="Enabled">
+    </td>
+  </tr>
+	  <tr>
+		  <td colSpan="2">
+			  <div id="uapsd_id" style="display:none">
+				  <table CELLSPACING="0" cellpadding="0" border="0">
+					  <tr>
+						  <td class="label2" width="170" align="left">U-APSD Support</td>
+						  <td ><INPUT type=TEXT name="ms_uapsd" class="statictextboxlist" readonly disabled SIZE="21" MAXLENGTH="20" VALUE="Disabled">
+						  </td>
+					  </tr>
+				  </table>
+			  </div>
+		  </td>
+	  </tr>
+  <tr>
+    <td class="label2" width="142" >QoS Level</td>
+    <td>
+      <INPUT type=TEXT name="qos_level" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Silver">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >802.1p Tag</td>
+    <td>
+      <INPUT type=TEXT name="dot1pTag" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Average Data Rate</td>
+    <td>
+      <INPUT type=TEXT name="dataaverage" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Average Real-Time Rate</td>
+    <td>
+      <INPUT type=TEXT name="rtaverage" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Burst Data Rate</td>
+    <td>
+      <INPUT type=TEXT name="databurst" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Burst Real-Time Rate</td>
+    <td>
+      <INPUT type=TEXT name="rtburst" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Average Uplink Data Rate</td>
+    <td>
+      <INPUT type=TEXT name="uplink_dataaverage" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Average Uplink Real-Time Rate</td>
+    <td>
+      <INPUT type=TEXT name="uplink_rtaverage" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Burst Uplink Data Rate</td>
+    <td>
+      <INPUT type=TEXT name="uplink_databurst" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Burst Uplink Real-Time Rate</td>
+    <td>
+      <INPUT type=TEXT name="uplink_rtburst" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="disabled">
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2" class="label1">Client Statistics</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+  </tr>
+  <tr>
+    <td class="label2" width="142" >Bytes Received</td>
+
+    <td>
+      <INPUT type=TEXT name="bytes_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="1010223">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Bytes Sent</td>
+    <td>
+      <INPUT type=TEXT name="bytes_send" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="686803">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >Packets Received</td>
+    <td>
+      <INPUT type=TEXT name="packet_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="9173">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Packets Sent</td>
+    <td>
+      <INPUT type=TEXT name="packet_sent" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="4455">
+
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Policy Errors</td>
+    <td>
+      <INPUT type=TEXT name="policy_errors" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >RSSI</td>
+
+    <td>
+      <INPUT type=TEXT name="rssi" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="-43">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >SNR</td>
+    <td>
+      <INPUT type=TEXT name="snr" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="39">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Sample Time</td>
+    <td>
+      <INPUT type=TEXT name="last_sample_time" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="32" VALUE="Sun Oct 18 13:51:04 2026
+">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Excessive Retries</td>
+    <td>
+      <INPUT type=TEXT name="excessive_retries" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Retries</td>
+    <td>
+      <INPUT type=TEXT name="retries" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Success Count</td>
+    <td>
+      <INPUT type=TEXT name="success_count" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Fail Count</td>
+    <td>
+      <INPUT type=TEXT name="fail_count" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Tx Filtered</td>
+    <td>
+      <INPUT type=TEXT name="tx_filtered" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Data Retries</td>
+    <td>
+      <INPUT type=TEXT name="data_retries" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="746">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Rts Retries</td>
+    <td>
+      <INPUT type=TEXT name="rts_retries" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Duplicates</td>
+    <td>
+      <INPUT type=TEXT name="dup_packets" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Decrypt Failed</td>
+    <td>
+      <INPUT type=TEXT name="decrypt_failed" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Mic Errors</td>
+    <td>
+      <INPUT type=TEXT name="mic_errors" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Mic Missing Frames</td>
+    <td>
+      <INPUT type=TEXT name="mic_missing" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <!-- Dont know why this is repeating. Have commented is as per Bug CSCsd78098.
+  <tr>
+    <td class="label2" >Packets Received</td>
+    <td>
+      <INPUT type=TEXT name="packets_recvd" class="statictextboxlist" readonly SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Packets Sent</td>
+    <td>
+      <INPUT type=TEXT name="packets_sent" class="statictextboxlist" readonly SIZE="16" MAXLENGTH="16" VALUE="0">
+    </td>
+  </tr>
+  -->
+  <tr>
+     <td class="label2">RA Packets Dropped</td>
+     <td>
+      <INPUT type=TEXT name="ra_pkt_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+     </td>
+  </tr>
+  <tr>
+     <td class="label2">Interim Updates sent </td>
+     <td>
+      <INPUT type=TEXT name="interim_updates_count" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+
+     </td>
+  </tr>
+   <tr>
+
+    <td class="label2">This page refreshes every 90 seconds</td>
+  
+   </tr>
+
+
+
+          <tr>
+            <td colspan="2" class="label1">Client Rate Limiting Statistics</td>
+          </tr>
+          <tr>
+            <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Packets Recieved</td>
+
+            <td>
+              <INPUT type=TEXT name="RL_data_pkts_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Rx Packets Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_rx_data_pkts_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+
+          <tr>
+            <td class="label2" >Data Bytes Recieved</td>
+            <td>
+              <INPUT type=TEXT name="RL_data_bytes_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Rx Bytes Dropped.</td>
+            <td>
+              <INPUT type=TEXT name="RL_rx_data_bytes_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Packets Recieved</td>
+            <td>
+              <INPUT type=TEXT name="RL_realtime_pkts_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Rx Packets Dropped</td>
+
+            <td>
+              <INPUT type=TEXT name="RL_rx_realtime_pkts_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Bytes Recieved</td>
+            <td>
+              <INPUT type=TEXT name="RL_realtime_bytes_recvd" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Rx Bytes Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_rx_realtime_bytes_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Packets Sent</td>
+            <td>
+              <INPUT type=TEXT name="RL_data_pkts_sent" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Tx Packets Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_tx_data_pkts_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Bytes Sent</td>
+            <td>
+              <INPUT type=TEXT name="RL_data_bytes_sent" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Data Tx Bytes Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_tx_data_bytes_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Packets Sent</td>
+            <td>
+              <INPUT type=TEXT name="RL_realtime_pkts_sent" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Tx Packets Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_tx_realtime_pkts_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Bytes Sent</td>
+            <td>
+              <INPUT type=TEXT name="RL_realtime_bytes_sent" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+          <tr>
+            <td class="label2" >Realtime Tx Bytes Dropped</td>
+            <td>
+              <INPUT type=TEXT name="RL_tx_realtime_bytes_dropped" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="16" VALUE="0">
+            </td>
+          </tr>
+
+
+</table>
+</td>
+
+<td valign="top">
+<table cellspacing=0 cellpadding="0" border="0">
+  <tr>
+    <td colspan="2" class="label1">AP Properties</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+  </tr>
+
+  <tr>
+    <td class="label2" width="142" >AP Address</td>
+    <td>
+      <INPUT type=TEXT name="lrad_addr" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="
+84:3d:c6:37:86:f0  ">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >AP Name</td>
+    <td>
+      <INPUT type=TEXT name="lrad_name" class="statictextboxlist" readonly disabled SIZE="50" MAXLENGTH="50" VALUE="AP3-Garage">
+
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >AP Type</td>
+    <td>
+      <INPUT type=TEXT name="radio_type" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="802.11ac">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >AP radio slot Id</td>
+    <td>
+      <INPUT type=TEXT name="lrad_slot" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="1">
+    </td>
+  </tr>
+  <tr>
+  <tr>
+    <td class="label2" >WLAN Profile</td>
+
+    <td>
+      <INPUT type=TEXT name="ms_profile" class="statictextboxlist" readonly disabled SIZE="42" MAXLENGTH="19" VALUE="Bieling">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >WLAN SSID</td>
+
+    <td>
+      <INPUT type=TEXT name="ms_ssid" class="statictextboxlist" readonly disabled SIZE="42" MAXLENGTH="32" VALUE="Bieling">
+    </td>
+  </tr>
+
+
+	  <tr>
+		  <td colSpan="2">
+			  <div id="dataSwitching_id" style="display:none">
+				  <table CELLSPACING="0" cellpadding="0" border="0">
+					  <tr>
+						  <td class="label2" width="142" align="left">Data Switching</td>
+						  <td ><INPUT type=TEXT name="ms_dataSwitching" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Local">
+						  </td>
+					  </tr>
+    <!-- Hiding HREAP local auth feature -->                       
+					  <tr>
+						  <td class="label2" width="142" align="left">Authentication</td>
+						  <td ><INPUT type=TEXT name="ms_auth" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Central">
+						  </td>
+					  </tr>
+<!-- JB_FEATURES -->                                                  
+                                                  
+				  </table>
+			  </div>
+		  </td>
+	  </tr>
+  <tr>
+    <td class="label2" >Status</td>
+    <td>
+      <INPUT type=TEXT name="status" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Associated">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Association ID</td>
+    <td>
+      <INPUT type=TEXT name="aid" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="2">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" nowrap >802.11 Authentication</td>
+    <td>
+      <INPUT type=TEXT name="authAlg" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Open System">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Reason Code</td>
+    <td>
+      <INPUT type=TEXT name="reasonCode" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="1">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Status Code</td>
+
+    <td>
+      <INPUT type=TEXT name="statusCode" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="0">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >CF Pollable</td>
+    <td>
+      <INPUT type=TEXT name="cf_pollable" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Not Implemented">
+    </td>
+  </tr>
+
+  <tr>
+    <td class="label2" >CF Poll Request</td>
+    <td>
+      <INPUT type=TEXT name="cf_pollrequest" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Not Implemented">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Short Preamble</td>
+    <td>
+      <INPUT type=TEXT name="short_preamble" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Not Implemented">
+
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >PBCC</td>
+    <td>
+      <INPUT type=TEXT name="pbcc" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Not Implemented">
+    </td>
+  </tr>
+  <tr>
+    <td class="label2" >Channel Agility</td>
+
+    <td>
+      <INPUT type=TEXT name="ch_agility" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="Not Implemented">
+    </td>
+  </tr>
+  <tr>
+
+  <tr>
+    <td class="label2" >Timeout</td>
+    <td>
+      <INPUT type=TEXT name="timeout" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="0">
+    </td>
+  </tr>
+
+
+  <tr>
+    <td class="label2" >WEP State</td>
+    <td>
+      <INPUT type=TEXT name="wep_state" class="statictextboxlist" readonly disabled SIZE="16" MAXLENGTH="15" VALUE="WEP Enable">
+    </td>
+ <script>popup1();</script>
+<script>popup2();</script>
+  </tr>
+
+
+
+ 
+
+
+
+
+<tr>
+<td colspan="2">
+   <table cellSpacing=0 cellPadding=0 border=0>
+   <TBODY>
+     <tr>
+       <td colspan="2" class="label1">Allowed (URL)IP address</td>
+     </tr>
+     <tr>
+       <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+     </tr>
+
+
+
+</TBODY>
+</table>
+</td>
+</tr>
+
+<tr>
+  <td colspan="2" class="label1">Learned Ip Addresses for Flex Web-Auth ACL</td>
+</tr>
+<tr>
+  <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+ </tr>
+ <tr>
+    <td class="label2" >Allow Roam Flag</td>
+    <td>
+      <INPUT type=TEXT name="allow_roam" class="statictextboxlist" readonly disabled SIZE="20" MAXLENGTH="19" VALUE="">
+    </td>
+ </tr>
+<tr>
+   <td class="label2" >Ipv4 Address Count</td>
+   <td>
+     <INPUT type=TEXT name="ipv4_address_count" class="statictextboxlist" readonly disabled SIZE="10" MAXLENGTH="10" VALUE="0">
+   </td>
+ </tr>
+<tr>
+  <td class="label2" >Ipv6 Address Count</td>
+  <td>
+    <INPUT type=TEXT name="ipv6_address_count" class="statictextboxlist" readonly disabled SIZE="10" MAXLENGTH="10" VALUE="0">
+  </td>
+</tr>
+ <tr><td colspan="2" class="label1">IPv4 Addresses</td> </tr>
+ <tr>
+  <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+ </tr>
+
+<tr>
+  <td colspan="2">
+  <table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+     <td style="padding-top: 13px">
+     <table border="0" cellspacing="1" cellpadding="0">
+     <tr>
+        <th align="left">IP Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+        <th align="left">TTL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> 
+        <th align="left">Rule Action&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+       </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+<tr><td colspan="2" class="label1">IPv6 Addresses</td></tr>
+ <tr> <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td></tr>
+
+<tr>
+  <td colspan="2">
+  <table border="0" cellspacing="0" cellpadding="0">
+  <tr>
+     <td style="padding-top: 13px">
+     <table border="0" cellspacing="1" cellpadding="0">
+     <tr>
+        <th align="left">IP Address&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+        <th align="left">TTL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> 
+        <th align="left">Rule Action&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+        <th>&nbsp;</th>
+        <td>&nbsp;</td>
+       </tr>
+
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+</tr>
+
+
+
+
+
+  <tr>
+  <td colspan="2">
+   <div id="gtpv2clients" style="display:none">
+   <table cellSpacing=0 cellPadding=0 border=0>
+   <TBODY>
+     <tr>
+       <td colspan="2" class="label1">Tunnel Properties</td>
+     </tr>
+     <tr>
+       <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 State</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_state" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA MN Service</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_mn" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA NAI</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_nai" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA PGW Primary</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_pgw" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA IMSI</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_imsi" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA APN</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_apn" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA MSISDN</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_msisdn" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA 3gpp Charging Characteristics</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_3gpp" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA TEID Upstream</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_teidUp" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >GTPv2 AAA TEID Downstream</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_gtpv2_teidDown" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+   </TBODY>
+   </table>
+   </div>
+   </td>
+   </tr>
+
+  <tr>
+  <td colspan="2">
+   <div id="eogreclients" style="display:none">
+   <table cellSpacing=0 cellPadding=0 border=0>
+   <TBODY>
+     <tr>
+       <td colspan="2" class="label1">Tunnel Properties</td>
+     </tr>
+     <tr>
+       <td colspan="2" class="horizLine"><img src="../../images/spacer.gif" alt="" width="1" height="1"></td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE AAA MN Service</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_mn" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE AAA REALM</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_nai" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE AAA VLAN ID</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_vlan" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE AAA PGW Primary</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_pgw" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE Tunnel IPv6 Address</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_pgw_ipv6" class="statictextboxlist" readonly disabled SIZE="46" MAXLENGTH="46" VALUE="">
+      </td>
+     </tr>
+     <tr>
+      <td class="label2" >EoGRE AAA Domain</td>
+      <td>
+        <INPUT type=TEXT name="tunnel_eogre_domain" class="statictextboxlist" readonly disabled SIZE="32" MAXLENGTH="33" VALUE="">
+      </td>
+     </tr>
+   </TBODY>
+   </table>
+   </div>
+   </td>
+   </tr>
+
+   </tbody>
+  </table>
+</tr>
+</table>
+  
+  </div>
+      </div> <!-- End of General Tab -->
+
+
+
+
+
+<script>
+ var indexVal =0;
+</script>
+
+
+
+
+<script>
+ var indexVal =1;
+</script>
+
+
+
+
+<script>
+ var indexVal =2;
+</script>
+
+
+
+
+<script>
+ var indexVal =3;
+</script>
+
+
+
+
+<script>
+ var indexVal =4;
+</script>
+
+
+
+
+<script>
+ var indexVal =5;
+</script>
+
+
+
+
+<script>
+ var indexVal =6;
+</script>
+
+
+
+
+<script>
+ var indexVal =7;
+</script>
+
+
+
+
+<script>
+ var indexVal =8;
+</script>
+
+
+
+
+<script>
+ var indexVal =9;
+</script>
+
+
+
+
+<script>
+ var indexVal =10;
+</script>
+
+
+
+
+<script>
+ var indexVal =11;
+</script>
+
+
+
+
+<script>
+ var indexVal =12;
+</script>
+
+
+
+
+<script>
+ var indexVal =13;
+</script>
+
+
+
+
+<script>
+ var indexVal =14;
+</script>
+
+
+
+
+<script>
+ var indexVal =15;
+</script>
+
+
+
+
+<script>
+ var indexVal =16;
+</script>
+
+
+
+
+<script>
+ var indexVal =17;
+</script>
+
+
+
+
+<script>
+ var indexVal =18;
+</script>
+
+
+
+
+<script>
+ var indexVal =19;
+</script>
+
+
+
+
+<script>
+ var indexVal =20;
+</script>
+
+
+
+
+<script>
+ var indexVal =21;
+</script>
+
+
+
+
+<script>
+ var indexVal =22;
+</script>
+
+
+
+
+<script>
+ var indexVal =23;
+</script>
+
+
+
+
+<script>
+ var indexVal =24;
+</script>
+
+
+
+
+<script>
+ var indexVal =25;
+</script>
+
+
+
+
+<script>
+ var indexVal =26;
+</script>
+
+
+
+
+<script>
+ var indexVal =27;
+</script>
+
+
+
+
+<script>
+ var indexVal =28;
+</script>
+
+
+
+
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+
+
+ 
+<script>
+ var indexVal =0;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =1;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =2;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =3;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =4;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =5;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =6;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =7;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =8;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =9;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =10;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =11;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =12;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =13;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =14;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =15;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =16;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =17;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =18;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =19;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =20;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =21;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =22;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =23;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =24;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =25;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =26;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =27;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =28;
+</script>
+
+
+
+ 
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+
+
+
+<script>
+ var indexVal =0;
+</script>
+
+
+
+
+<script>
+ var indexVal =1;
+</script>
+
+
+
+
+<script>
+ var indexVal =2;
+</script>
+
+
+
+
+<script>
+ var indexVal =3;
+</script>
+
+
+
+
+<script>
+ var indexVal =4;
+</script>
+
+
+
+
+<script>
+ var indexVal =5;
+</script>
+
+
+
+
+<script>
+ var indexVal =6;
+</script>
+
+
+
+
+<script>
+ var indexVal =7;
+</script>
+
+
+
+
+<script>
+ var indexVal =8;
+</script>
+
+
+
+
+<script>
+ var indexVal =9;
+</script>
+
+
+
+
+<script>
+ var indexVal =10;
+</script>
+
+
+
+
+<script>
+ var indexVal =11;
+</script>
+
+
+
+
+<script>
+ var indexVal =12;
+</script>
+
+
+
+
+<script>
+ var indexVal =13;
+</script>
+
+
+
+
+<script>
+ var indexVal =14;
+</script>
+
+
+
+
+<script>
+ var indexVal =15;
+</script>
+
+
+
+
+<script>
+ var indexVal =16;
+</script>
+
+
+
+
+<script>
+ var indexVal =17;
+</script>
+
+
+
+
+<script>
+ var indexVal =18;
+</script>
+
+
+
+
+<script>
+ var indexVal =19;
+</script>
+
+
+
+
+<script>
+ var indexVal =20;
+</script>
+
+
+
+
+<script>
+ var indexVal =21;
+</script>
+
+
+
+
+<script>
+ var indexVal =22;
+</script>
+
+
+
+
+<script>
+ var indexVal =23;
+</script>
+
+
+
+
+<script>
+ var indexVal =24;
+</script>
+
+
+
+
+<script>
+ var indexVal =25;
+</script>
+
+
+
+
+<script>
+ var indexVal =26;
+</script>
+
+
+
+
+<script>
+ var indexVal =27;
+</script>
+
+
+
+
+<script>
+ var indexVal =28;
+</script>
+
+
+
+
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+
+
+
+<script>
+ var indexVal =0;
+</script>
+
+
+
+
+<script>
+ var indexVal =1;
+</script>
+
+
+
+
+<script>
+ var indexVal =2;
+</script>
+
+
+
+
+<script>
+ var indexVal =3;
+</script>
+
+
+
+
+<script>
+ var indexVal =4;
+</script>
+
+
+
+
+<script>
+ var indexVal =5;
+</script>
+
+
+
+
+<script>
+ var indexVal =6;
+</script>
+
+
+
+
+<script>
+ var indexVal =7;
+</script>
+
+
+
+
+<script>
+ var indexVal =8;
+</script>
+
+
+
+
+<script>
+ var indexVal =9;
+</script>
+
+
+
+
+<script>
+ var indexVal =10;
+</script>
+
+
+
+
+<script>
+ var indexVal =11;
+</script>
+
+
+
+
+<script>
+ var indexVal =12;
+</script>
+
+
+
+
+<script>
+ var indexVal =13;
+</script>
+
+
+
+
+<script>
+ var indexVal =14;
+</script>
+
+
+
+
+<script>
+ var indexVal =15;
+</script>
+
+
+
+
+<script>
+ var indexVal =16;
+</script>
+
+
+
+
+<script>
+ var indexVal =17;
+</script>
+
+
+
+
+<script>
+ var indexVal =18;
+</script>
+
+
+
+
+<script>
+ var indexVal =19;
+</script>
+
+
+
+
+<script>
+ var indexVal =20;
+</script>
+
+
+
+
+<script>
+ var indexVal =21;
+</script>
+
+
+
+
+<script>
+ var indexVal =22;
+</script>
+
+
+
+
+<script>
+ var indexVal =23;
+</script>
+
+
+
+
+<script>
+ var indexVal =24;
+</script>
+
+
+
+
+<script>
+ var indexVal =25;
+</script>
+
+
+
+
+<script>
+ var indexVal =26;
+</script>
+
+
+
+
+<script>
+ var indexVal =27;
+</script>
+
+
+
+
+<script>
+ var indexVal =28;
+</script>
+
+
+
+
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+
+
+
+<script>
+ var indexVal =0;
+</script>
+
+
+
+
+<script>
+ var indexVal =1;
+</script>
+
+
+
+
+<script>
+ var indexVal =2;
+</script>
+
+
+
+
+<script>
+ var indexVal =3;
+</script>
+
+
+
+
+<script>
+ var indexVal =4;
+</script>
+
+
+
+
+<script>
+ var indexVal =5;
+</script>
+
+
+
+
+<script>
+ var indexVal =6;
+</script>
+
+
+
+
+<script>
+ var indexVal =7;
+</script>
+
+
+
+
+<script>
+ var indexVal =8;
+</script>
+
+
+
+
+<script>
+ var indexVal =9;
+</script>
+
+
+
+
+<script>
+ var indexVal =10;
+</script>
+
+
+
+
+<script>
+ var indexVal =11;
+</script>
+
+
+
+
+<script>
+ var indexVal =12;
+</script>
+
+
+
+
+<script>
+ var indexVal =13;
+</script>
+
+
+
+
+<script>
+ var indexVal =14;
+</script>
+
+
+
+
+<script>
+ var indexVal =15;
+</script>
+
+
+
+
+<script>
+ var indexVal =16;
+</script>
+
+
+
+
+<script>
+ var indexVal =17;
+</script>
+
+
+
+
+<script>
+ var indexVal =18;
+</script>
+
+
+
+
+<script>
+ var indexVal =19;
+</script>
+
+
+
+
+<script>
+ var indexVal =20;
+</script>
+
+
+
+
+<script>
+ var indexVal =21;
+</script>
+
+
+
+
+<script>
+ var indexVal =22;
+</script>
+
+
+
+
+<script>
+ var indexVal =23;
+</script>
+
+
+
+
+<script>
+ var indexVal =24;
+</script>
+
+
+
+
+<script>
+ var indexVal =25;
+</script>
+
+
+
+
+<script>
+ var indexVal =26;
+</script>
+
+
+
+
+<script>
+ var indexVal =27;
+</script>
+
+
+
+
+<script>
+ var indexVal =28;
+</script>
+
+
+
+
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+
+
+
+<script>
+ var indexVal =0;
+</script>
+
+
+
+
+<script>
+ var indexVal =1;
+</script>
+
+
+
+
+<script>
+ var indexVal =2;
+</script>
+
+
+
+
+<script>
+ var indexVal =3;
+</script>
+
+
+
+
+<script>
+ var indexVal =4;
+</script>
+
+
+
+
+<script>
+ var indexVal =5;
+</script>
+
+
+
+
+<script>
+ var indexVal =6;
+</script>
+
+
+
+
+<script>
+ var indexVal =7;
+</script>
+
+
+
+
+<script>
+ var indexVal =8;
+</script>
+
+
+
+
+<script>
+ var indexVal =9;
+</script>
+
+
+
+
+<script>
+ var indexVal =10;
+</script>
+
+
+
+
+<script>
+ var indexVal =11;
+</script>
+
+
+
+
+<script>
+ var indexVal =12;
+</script>
+
+
+
+
+<script>
+ var indexVal =13;
+</script>
+
+
+
+
+<script>
+ var indexVal =14;
+</script>
+
+
+
+
+<script>
+ var indexVal =15;
+</script>
+
+
+
+
+<script>
+ var indexVal =16;
+</script>
+
+
+
+
+<script>
+ var indexVal =17;
+</script>
+
+
+
+
+<script>
+ var indexVal =18;
+</script>
+
+
+
+
+<script>
+ var indexVal =19;
+</script>
+
+
+
+
+<script>
+ var indexVal =20;
+</script>
+
+
+
+
+<script>
+ var indexVal =21;
+</script>
+
+
+
+
+<script>
+ var indexVal =22;
+</script>
+
+
+
+
+<script>
+ var indexVal =23;
+</script>
+
+
+
+
+<script>
+ var indexVal =24;
+</script>
+
+
+
+
+<script>
+ var indexVal =25;
+</script>
+
+
+
+
+<script>
+ var indexVal =26;
+</script>
+
+
+
+
+<script>
+ var indexVal =27;
+</script>
+
+
+
+
+<script>
+ var indexVal =28;
+</script>
+
+
+
+
+<script>
+ var indexVal =29;
+</script>
+
+
+
+
+</div>
+
+  <INPUT TYPE="hidden" NAME="index" SIZE="16" MAXLENGTH="15" VALUE="0">
+  <INPUT TYPE="hidden" NAME="buttonClicked" SIZE="16" MAXLENGTH="15" VALUE="778315008">
+  <INPUT TYPE="hidden" NAME="err_flag" SIZE="16" MAXLENGTH="15" VALUE="0">
+  <INPUT TYPE="hidden" NAME="err_msg" SIZE="512" MAXLENGTH="511" VALUE="">
+  <INPUT TYPE="hidden" NAME="info_flag" SIZE="16" MAXLENGTH="15" VALUE="0">
+  <INPUT TYPE="hidden" NAME="info_msg" SIZE="1024" MAXLENGTH="1023" VALUE="">
+  <INPUT TYPE="hidden" NAME="is_wgb_client" SIZE="1" MAXLENGTH="1" VALUE="0">
+  <INPUT TYPE="hidden" NAME="is_VLAN_Template_client" SIZE="1" MAXLENGTH="1" VALUE="1"> 
+</FORM>
+<script>
+selectList();
+</script>
+<script type="text/javascript">
+var dlg, dlg1;
+var currentTime = 0;
+function init(e) {
+	dlg = dojo.widget.byId("linkTestResultsDialog");
+	var btn = document.getElementById("hider");
+	dlg.setCloseControl(btn);
+	var btn1 = document.getElementById("hider1");
+	dlg.setCloseControl(btn1);
+	dlg1 = dojo.widget.byId("waitDialog");
+}
+dojo.addOnLoad(init);
+dojo.addOnLoad(showLinkTestDlg);
+
+function showLinkTestDlg(){
+if(document.getElementById('display_lt_results').value == 1){  //1 indicates ccx linktest
+document.getElementById('link_test').style.display = 'inline';
+document.getElementById('ping_test').style.display = 'none';
+dlg.show();
+}else if(document.getElementById('display_lt_results').value == 2){ //2 indicates ping test
+document.getElementById('link_test').style.display = 'none';
+document.getElementById('ping_test').style.display = 'inline';
+dlg.show();
+}
+}
+function showWaitDlg(){
+	dlg1.show();	
+	incrementTime();
+}
+function incrementTime(){
+
+    currentTime++;
+	if((currentTime % 10) == 0){
+        document.getElementById("waitDots").innerHTML=".";
+    }
+    else {
+        document.getElementById("waitDots").innerHTML=document.getElementById("waitDots").innerHTML+".";
+    }
+	setTimeout("incrementTime()",500);
+	
+}
+</script>
+<style type="text/css">
+body { font-family : sans-serif; }
+.dojoDialog {
+	background : #eee;
+	border : 1px solid #999;
+	-moz-border-radius : 5px;
+	padding : 4px;
+    top : 23%;
+    left : 30%;
+}
+</style>
+<DIV id=linkTestResultsDialog toggle="fade" toggleDuration="0" bgOpacity="0.4" bgColor="#F0F0F0" 
+dojoType="dialog" style="display:none">
+<FORM method="post" name="client_linkTest" id="client_linkTest" ACTION="/screens/apf/client_linkTest_results.html">
+<INPUT name="query_string" id="query_string" size="512" maxlength="512" type="hidden" VALUE="">
+<div id="link_test" style="display:none">
+		<table>
+		    <tr>
+			<td class="label1">Link Test Results</td>
+			<td align="right" valign="bottom" style="padding-bottom:4px"><img src="/images/close.gif" width="15" height="15" id="hider" alt="" /></td>
+		</tr>
+		<tr>
+			<td class="horizLine" colspan="2" width="360"><img src="/images/spacer.gif" width="1" height="1" alt=""></td>
+		</tr>
+			<tr>
+				<td nowrap="nowrap" class="label2"><label for="client_mac">Client MAC Address</label></td>
+				<td><INPUT type=TEXT name="client_mac" id="client_mac" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE=""></td>
+			</tr>
+			<tr>
+				<td nowrap="nowrap" class="label2"><label for="ap_mac">AP MAC Address</label></td>
+				<td><INPUT type=TEXT name="ap_mac" id="ap_mac" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE=""></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="pkt_sent">Packets Sent/Received by AP</label></td>
+				<td><INPUT type=TEXT name="pkt_sent_rcvd" id="pkt_sent" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0"></td>
+			</tr>
+			<!--<tr>
+				<td  nowrap="nowrap" class="label2"><label for="pkt_rcvd">Packets Received by AP</label></td>
+				<td><INPUT type=TEXT name="pkt_rcvd" id="pkt_rcvd" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="0"></td>
+			</tr>-->
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="pkt_lost">Packets Lost  (Total/AP-&gt;Client/Client-&gt;AP)</label></td>
+				<td><INPUT type=TEXT name="pkt_lost" id="pkt_lost" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="pkt_rtt">Packets RTT (min/max/avg) (ms)</label></td>
+				<td><INPUT type=TEXT name="pkt_rtt" id="pkt_rtt" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="rssi_ap">RSSI at AP (min/max/avg) (dBm)</label></td>
+				<td><INPUT type=TEXT name="rssi_ap" id="rssi_ap" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="rssi_client">RSSI at Client (min/max/avg) (dBm)</label></td>
+				<td><INPUT type=TEXT name="rssi_client" id="rssi_client" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="snr_ap">SNR at AP (min/max/avg) (dB)</label></td>
+				<td><INPUT type=TEXT name="snr_ap" id="snr_ap" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="snr_client">SNR at Client (min/max/avg)(dB)</label></td>
+				<td><INPUT type=TEXT name="snr_client" id="snr_client" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="tx_retry_ap">Transmit retries at AP (Total/Max)</label></td>
+				<td><INPUT type=TEXT name="tx_retry_ap" id="tx_retry_ap" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="tx_retry_client">Transmit retries at Client (Total/Max)</label></td>
+				<td><INPUT type=TEXT name="tx_retry_client" id="tx_retry_client" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE="0/0"></td>
+			</tr>
+			<tr>
+			 <td colspan="2">
+			 <table>
+			 <tr><td>
+				<table border=0 cellspacing=0 cellpadding=0><tr><td class="list2" style="PADDING-LEFT: 16px;" nowrap>Packet rate</td></tr>
+					   <tr><td class="list2"  style="PADDING-LEFT: 16px;" nowrap>Sent count</td></tr>
+					   <tr><td class="list2"  style="PADDING-LEFT: 16px;" nowrap>Receive count</td></tr>
+				</table>
+				</td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.0.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.0.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.0.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.1.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.1.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.1.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.2.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.2.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.2.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.3.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.3.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.3.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.4.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.4.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.4.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.5.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.5.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.5.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.6.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.6.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.6.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.7.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.7.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.7.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.8.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.8.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.8.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.9.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.9.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.9.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.10.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.10.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.10.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="1.11.12.dataRate" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="5" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.11.12.sent_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="1.11.12.receive_count" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			</table>
+			</td>
+			</tr>
+			</table>
+			</td>
+		</tr>
+
+			<tr>
+			 <td colspan="2">
+			 <table>
+			 <tr><td>
+				<table border=0 cellspacing=0 cellpadding=0><tr><td class="list2" style="PADDING-LEFT: 16px;" nowrap>Packet rate(mcs)</td></tr>
+					   <tr><td class="list2"  style="PADDING-LEFT: 16px;" nowrap>Sent count</td></tr>
+					   <tr><td class="list2"  style="PADDING-LEFT: 16px;" nowrap>Receive count</td></tr>
+				</table>
+				</td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.0.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.0.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.0.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.1.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.1.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.1.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.2.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.2.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.2.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.3.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.3.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.3.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.4.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.4.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.4.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.5.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.5.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.5.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.6.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.6.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.6.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.7.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.7.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.7.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.8.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.8.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.8.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.9.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.9.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.9.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.10.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.10.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.10.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.11.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.11.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.11.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.12.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.12.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.12.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.13.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.13.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.13.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.14.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.14.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.14.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			 <td>
+			    <table border=0 cellspacing=0 cellpadding=0><tr><td><INPUT type="text" name="2.15.16.dataRate_11n" class="statictextboxlistNoPad" readonly SIZE="4" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.15.16.sent_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+					   <tr><td><INPUT type="text" name="2.15.16.receive_count_11n" class="statictextboxlistNoPad" readonly SIZE="3" MAXLENGTH="4" VALUE="0"></td></tr>
+				</table>
+			 </td>
+			 
+			 
+			</table>
+			</td>
+			</tr>
+			</table>
+			</td>
+		</tr>
+       </table>
+		<INPUT TYPE="hidden" NAME="display_lt_results" ID="display_lt_results" SIZE="2" MAXLENGTH="2" VALUE="0">
+		<INPUT TYPE="hidden" NAME="err_flag" SIZE="16" MAXLENGTH="15" VALUE="0">
+		<INPUT TYPE="hidden" NAME="err_msg" SIZE="512" MAXLENGTH="511" VALUE="">
+		<INPUT TYPE="hidden" NAME="info_flag" SIZE="16" MAXLENGTH="15" VALUE="0">
+		<INPUT TYPE="hidden" NAME="info_msg" SIZE="1024" MAXLENGTH="1023" VALUE="">
+		<INPUT TYPE="hidden" NAME="lt_src_page" id="lt_src_page" SIZE="1" MAXLENGTH="1" VALUE="0">
+		<INPUT type="hidden" name="wgb_macAdd" id="wgb_macAdd" size="20" maxlength="19" VALUE="">
+	
+</div>
+<DIV id="ping_test" style="display:none">
+<table>
+		    <tr>
+			<td class="label1">Ping Test Results</td>
+			<td align="right" valign="bottom" style="padding-bottom:4px"><img src="/images/close.gif" width="15" height="15" id="hider1" alt="" /></td>
+		</tr>
+		<tr>
+			<td class="horizLine" colspan="2" width="360"><img src="/images/spacer.gif" width="1" height="1" alt=""></td>
+		</tr>
+			<tr>
+				<td nowrap="nowrap" class="label2"><label for="ping_client_mac">Client MAC Address</label></td>
+				<td><INPUT type=TEXT name="ping_client_mac" id="ping_client_mac" class="statictextboxlist2" readonly SIZE="20" MAXLENGTH="20" VALUE=""></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="pkt_len">Packets Length</label></td>
+				<td><INPUT type=TEXT name="pkt_len" id="pkt_len" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="ping_pkt_sent">Packets Sent</label></td>
+				<td><INPUT type=TEXT name="ping_pkt_sent" id="ping_pkt_sent" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="0"></td>
+			</tr>
+			<tr>
+				<td  nowrap="nowrap" class="label2"><label for="ping_pkt_rcvd">Packets Received</label></td>
+				<td><INPUT type=TEXT name="ping_pkt_rcvd" id="ping_pkt_rcvd" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="0"></td>
+			</tr>
+			<tr>
+				<td nowrap="nowrap" class="label2"><label for="local_rssi">Local Signal Strength (dBm)</label></td>
+				<td><INPUT type=TEXT name="local_rssi" id="local_rssi" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="778315008"></td>
+			</tr>
+			<tr>
+				<td nowrap="nowrap" class="label2"><label for="local_snr">Local Signal to Noise Ratio (dB)</label></td>
+				<td><INPUT type=TEXT name="local_snr" id="local_snr" class="statictextboxlist2" readonly SIZE="10" MAXLENGTH="10" VALUE="778315008"></td>
+			</tr>
+
+</table>
+</div>
+</FORM>
+</div>
+<div dojoType="dialog" id="waitDialog" bgColor="white" bgOpacity="0.5" toggle="fade" toggleDuration="250" style="display:none">
+    <table width="245" height="60"><tr><td style="font-size: 15px;" valign="middle">
+	&nbsp;&nbsp;Link test in progress <nobr style="font-size: 20px;" id="waitDots">.</nobr></td></tr></table>
+</div>
+
+</body>
+</html>
+
