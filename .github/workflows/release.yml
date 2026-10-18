@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set manifest version from tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          jq --arg v "$version" '.version = $v' \
+            custom_components/cisco_mobility_express/manifest.json > manifest.tmp
+          mv manifest.tmp custom_components/cisco_mobility_express/manifest.json
+
+      - name: Build zip
+        working-directory: custom_components/cisco_mobility_express
+        run: zip -r "$GITHUB_WORKSPACE/cisco_mobility_express.zip" . -x '__pycache__/*' '*.pyc'
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" cisco_mobility_express.zip --generate-notes --verify-tag

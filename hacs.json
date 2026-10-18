@@ -1,5 +1,7 @@
 {
   "name": "Cisco Mobility Express",
   "homeassistant": "2025.2.0",
-  "render_readme": true
+  "render_readme": true,
+  "zip_release": true,
+  "filename": "cisco_mobility_express.zip"
 }
