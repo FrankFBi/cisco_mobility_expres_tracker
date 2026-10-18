@@ -63,6 +63,10 @@ On controllers with the classic AireOS client detail page, such as a Cisco WLC, 
 
 Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes. Controllers without that page are tracked as before, without these attributes.
 
+### Cleanup of unused trackers
+
+A **disabled** tracker is deleted once its client hasn't been seen on the controller for 30 days. If that client connects again, it gets a new tracker, which starts disabled like any new client. Enabled trackers are never deleted. Disabled trackers that existed before this feature start their 30 days when you install it.
+
 ### Devices
 
 Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`) and *Band* (`FB`). They are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.

@@ -8,6 +8,8 @@ DOMAIN = "cisco_mobility_express"
 PLATFORMS = [Platform.DEVICE_TRACKER, Platform.SENSOR]
 SCAN_INTERVAL = timedelta(seconds=30)
 DETAILS_INTERVAL = timedelta(minutes=5)
+PRUNE_INTERVAL = timedelta(hours=1)
+STALE_TRACKER_AGE = timedelta(days=30)
 
 DEFAULT_SSL = False
 DEFAULT_VERIFY_SSL = True
