@@ -19,6 +19,7 @@ from .coordinator import (
     CiscoMEConfigEntry,
     CiscoMEDataUpdateCoordinator,
 )
+from .device_tracker import last_seen_store
 from .devices import async_sync_client_devices
 
 
@@ -54,3 +55,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> b
 async def async_unload_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> bool:
     """Unload a config entry."""
     return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> None:
+    """Remove the stored client data of a deleted config entry."""
+    await last_seen_store(hass, entry.entry_id).async_remove()
