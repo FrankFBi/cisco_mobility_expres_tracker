@@ -95,7 +95,9 @@ async def async_setup_entry(
     async_prune_stale_trackers()
     entry.async_on_unload(coordinator.async_add_listener(async_coordinator_updated))
     entry.async_on_unload(
-        async_track_time_interval(hass, async_prune_stale_trackers, PRUNE_INTERVAL)
+        async_track_time_interval(
+            hass, async_prune_stale_trackers, PRUNE_INTERVAL, cancel_on_shutdown=True
+        )
     )
 
 

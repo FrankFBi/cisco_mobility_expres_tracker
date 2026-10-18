@@ -96,6 +96,24 @@ automation:
           entity_id: light.garage
 ```
 
+A common use is turning off heating in a room nobody is in. Here the office heater turns off once Frank's phone has been off the office AP for 10 minutes. That covers both moving to another AP and leaving the house, since the sensor is `unknown` while the phone is disconnected:
+
+```yaml
+automation:
+  - alias: Office heater off when Frank has left the office
+    triggers:
+      - trigger: state
+        entity_id: sensor.franks_phone_access_point
+        from: AP2-Office
+        for: "00:10:00"
+    actions:
+      - action: climate.turn_off
+        target:
+          entity_id: climate.office_heater
+```
+
+The `for` delay keeps a brief hop to a neighbouring AP from turning the heater off.
+
 Phones sometimes stay on a distant AP, and they can switch between two nearby APs. So read the AP as a rough indication of the room, not an exact location.
 
 ## Development
