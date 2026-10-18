@@ -112,9 +112,9 @@ automation:
           entity_id: climate.office_heater
 ```
 
-The `for` delay keeps a brief hop to a neighbouring AP from turning the heater off.
+The `for` delay is a buffer for walking through another room, so the heater stays on when you're only passing through.
 
-Phones sometimes stay on a distant AP, and they can switch between two nearby APs. So read the AP as a rough indication of the room, not an exact location.
+This works well because the data comes from a controller (WLC or Mobility Express). The controller decides which AP each client is associated with, and with controller-based roaming (e.g. *Optimized Roaming*) it moves a phone to the nearest AP as it moves. Standalone APs often lack this, and their phones can stay on a distant AP. To get a reliable room location, enable roaming on the controller and place the APs so each room or zone has its own.
 
 ## Development
 
