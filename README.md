@@ -81,22 +81,25 @@ Read it in a template:
 {{ state_attr('device_tracker.franks_phone', 'AP') }}
 ```
 
-On an enabled tracker, the device's *Access point* sensor has the same value as a state, so it can be used directly in history graphs and triggers:
+On an enabled tracker, the device's *Access point* sensor has the same value as a state, so it can be used directly in history graphs and triggers.
+
+The controller is polled every 30 seconds, and a client that has left takes a little longer to be reported as gone. That's too slow for turning a light on as someone walks in. It suits actions that can wait a few minutes: heating, and turning things off once a person has left. For example, lights off once Frank's phone has been off the home network for 5 minutes:
 
 ```yaml
 automation:
-  - alias: Garage light on when Frank's phone joins the garage AP
+  - alias: Lights off when Frank has left home
     triggers:
       - trigger: state
-        entity_id: sensor.franks_phone_access_point
-        to: AP3-Garage
+        entity_id: device_tracker.franks_phone
+        to: not_home
+        for: "00:05:00"
     actions:
-      - action: light.turn_on
+      - action: light.turn_off
         target:
-          entity_id: light.garage
+          entity_id: light.office
 ```
 
-A common use is turning off heating in a room nobody is in. Here the office heater turns off once Frank's phone has been off the office AP for 10 minutes. That covers both moving to another AP and leaving the house, since the sensor is `unknown` while the phone is disconnected:
+The main use is heating: turning off the heater in a room nobody is in. Here the office heater turns off once Frank's phone has been off the office AP for 10 minutes. That covers both moving to another AP and leaving the house, since the sensor is `unknown` while the phone is disconnected:
 
 ```yaml
 automation:
