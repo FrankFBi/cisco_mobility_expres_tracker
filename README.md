@@ -52,7 +52,7 @@ If the controller later rejects the credentials, Home Assistant prompts you to r
 
 There is one `device_tracker` entity per client MAC address the controller has reported. It is `home` while the client is associated and `not_home` after it leaves. Attributes include the hostname (`clId`) and whatever the controller's client table reports, such as `AP`, `PT` and `SS`. The controller is polled every 30 seconds.
 
-On controllers with the classic AireOS client detail page (verified on a Cisco WLC), each client's detail page is also read for:
+On controllers with the classic AireOS client detail page, such as a Cisco WLC, each client's detail page is also read for:
 
 | Attribute | Value |
 |---|---|
