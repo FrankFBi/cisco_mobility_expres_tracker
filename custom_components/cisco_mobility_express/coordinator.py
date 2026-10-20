@@ -138,6 +138,6 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
         for mac, client in clients.items():
             details = self._listed.get(mac, {})
             if (all_ipv6 or needs_detail_page(details)) and mac in self._details:
-                details = self._details[mac][1]
+                details = {**details, **self._details[mac][1]}
             for key, value in details.items():
                 client.setdefault(key, value)

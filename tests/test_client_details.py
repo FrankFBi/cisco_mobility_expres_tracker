@@ -215,7 +215,9 @@ async def test_details_interval_option(
     assert session.post.call_count == 2
 
 
-def _list_row(index: int, mac: str, ip: str, ssid: str = "Bieling") -> str:
+def _list_row(
+    index: int, mac: str, ip: str, ssid: str = "Bieling", protocol: str = "802.11ac(5 GHz)"
+) -> str:
     """Return a client row as served by a real WLC's client list."""
     return (
         f'<INPUT type="text" name="1.{index}.2.ms_addr" class="statictextboxlink" readonly '
@@ -226,24 +228,32 @@ def _list_row(index: int, mac: str, ip: str, ssid: str = "Bieling") -> str:
         f'<INPUT type="text" name="1.{index}.2.ms_profile" VALUE="{ssid}">\n'
         f'<INPUT type="text" name="1.{index}.2.ms_ssid" class="statictextboxlist" readonly '
         f'SIZE="21" MAXLENGTH="32" VALUE="{ssid}">\n'
+        f'<INPUT type="TEXT" name="1.{index}.2.dot11_type" class="statictextboxlist" readonly '
+        f'SIZE="15" MAXLENGTH="15" VALUE="{protocol}">\n'
     )
 
 
 LISTED_HTML = (
     LIST_HTML
     + _list_row(0, "94:27:70:D0:09:75", "10.104.28.157")
-    + _list_row(1, "38:8a:06:db:78:08", "fddb:0:104:28::8")
+    + _list_row(1, "38:8a:06:db:78:08", "fddb:0:104:28::8", protocol="802.11n(2.4 GHz)")
 )
 
 
 def test_parse_client_list() -> None:
     """IP and SSID of every client come from the list page."""
     assert parse_client_list(LISTED_HTML) == {
-        "94:27:70:d0:09:75": {"ip": "10.104.28.157", "ipv4": "10.104.28.157", "SSID": "Bieling"},
+        "94:27:70:d0:09:75": {
+            "ip": "10.104.28.157",
+            "ipv4": "10.104.28.157",
+            "SSID": "Bieling",
+            "FB": "5GHz",
+        },
         "38:8a:06:db:78:08": {
             "ip": "fddb:0:104:28::8",
             "ipv6": ["fddb:0:104:28::8"],
             "SSID": "Bieling",
+            "FB": "2.4GHz",
         },
     }
 
@@ -261,9 +271,25 @@ async def test_details_from_client_list(
     state = hass.states.get(ENTITY)
     assert state.attributes["ip"] == "10.104.28.157"
     assert state.attributes["SSID"] == "Bieling"
+    assert state.attributes["FB"] == "5GHz"
     assert "ipv6" not in state.attributes
     assert session.get.call_count == 1
     session.post.assert_not_called()
+
+
+async def test_controller_band_wins(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """The band from the client list only fills in a missing FB."""
+    session = _detail_session(mock_controller)
+    session.get.return_value = MagicMock(status_code=200, text=LISTED_HTML)
+    device = namedtuple("WlcDeviceFB", [*WlcDevice._fields, "FB"])
+    mock_controller.return_value.get_associated_devices.return_value = [device(*CLIENT, "2.4GHz")]
+    await _setup(hass, mock_config_entry)
+
+    assert hass.states.get(ENTITY).attributes["FB"] == "2.4GHz"
 
 
 async def test_all_ipv6_option(
@@ -286,6 +312,7 @@ async def test_all_ipv6_option(
         "fddb:0:104:28:9627:70ff:fed0:975",
         "fe80::9627:70ff:fed0:975",
     ]
+    assert hass.states.get(ENTITY).attributes["FB"] == "5GHz"
 
 
 async def test_link_local_only_uses_detail_page(

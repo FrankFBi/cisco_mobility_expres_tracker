@@ -22,8 +22,11 @@ _IPV6 = re.compile(r'name="ms_ipaddr6"[^>]*>([^<]*)</textarea>', re.IGNORECASE)
 _SSID = re.compile(r'name="ms_ssid"[^>]*value="([^"]*)"', re.IGNORECASE)
 # List rows are named "1.<row>.<total>.<field>".
 _LIST_FIELD = re.compile(
-    r'name="\d+\.(\d+)\.\d+\.(ms_addr|ms_ipaddr|ms_ssid)"[^>]*value="([^"]*)"', re.IGNORECASE
+    r'name="\d+\.(\d+)\.\d+\.(ms_addr|ms_ipaddr|ms_ssid|dot11_type)"[^>]*value="([^"]*)"',
+    re.IGNORECASE,
 )
+# The list's protocol column holds the band, e.g. "802.11n(2.4 GHz)".
+_BAND = re.compile(r"\(\s*([\d.]+)\s*GHz\s*\)", re.IGNORECASE)
 
 
 class ClientDetailsUnavailable(Exception):
@@ -83,15 +86,21 @@ def parse_client_details(html: str) -> dict[str, Any]:
     return _build_details(addresses, m.group(1) if (m := _SSID.search(html)) else "")
 
 
+def _list_details(row: dict[str, str]) -> dict[str, Any]:
+    """Return the attributes of one client list row."""
+    details = _build_details([row.get("ms_ipaddr", "")], row.get("ms_ssid", ""))
+    if band := _BAND.search(row.get("dot11_type", "")):
+        details["FB"] = f"{band.group(1)}GHz"
+    return details
+
+
 def parse_client_list(html: str) -> dict[str, dict[str, Any]]:
-    """Extract each client's IP and SSID from the client list page, keyed by MAC."""
+    """Extract each client's IP, SSID and band from the client list page, keyed by MAC."""
     rows: dict[str, dict[str, str]] = {}
     for row, name, value in _LIST_FIELD.findall(html):
         rows.setdefault(row, {})[name.lower()] = value
     return {
-        row["ms_addr"].strip().lower(): _build_details(
-            [row.get("ms_ipaddr", "")], row.get("ms_ssid", "")
-        )
+        row["ms_addr"].strip().lower(): _list_details(row)
         for row in rows.values()
         if row.get("ms_addr")
     }
