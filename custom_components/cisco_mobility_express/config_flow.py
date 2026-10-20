@@ -30,27 +30,45 @@ from homeassistant.helpers.selector import (
 
 from . import create_controller
 from .const import (
+    CONF_DETAILS_INTERVAL,
+    CONF_STALE_TRACKER_AGE,
     DEFAULT_SSL,
     DEFAULT_VERIFY_SSL,
+    DETAILS_INTERVAL,
     DOMAIN,
+    MAX_DETAILS_INTERVAL,
     MAX_SCAN_INTERVAL,
+    MAX_STALE_TRACKER_AGE,
+    MIN_DETAILS_INTERVAL,
     MIN_SCAN_INTERVAL,
+    MIN_STALE_TRACKER_AGE,
     SCAN_INTERVAL,
+    STALE_TRACKER_AGE,
 )
 from .coordinator import CONNECTION_ERRORS
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL_SELECTOR = NumberSelector(
-    NumberSelectorConfig(
-        min=MIN_SCAN_INTERVAL,
-        max=MAX_SCAN_INTERVAL,
-        step=1,
-        unit_of_measurement="s",
-        mode=NumberSelectorMode.BOX,
+
+def _number(minimum: int, maximum: int, unit: str) -> NumberSelector:
+    return NumberSelector(
+        NumberSelectorConfig(
+            min=minimum,
+            max=maximum,
+            step=1,
+            unit_of_measurement=unit,
+            mode=NumberSelectorMode.BOX,
+        )
     )
-)
+
+
+SCAN_INTERVAL_SELECTOR = _number(MIN_SCAN_INTERVAL, MAX_SCAN_INTERVAL, "s")
 DEFAULT_SCAN_INTERVAL = int(SCAN_INTERVAL.total_seconds())
+DEFAULT_OPTIONS = {
+    CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
+    CONF_DETAILS_INTERVAL: int(DETAILS_INTERVAL.total_seconds() // 60),
+    CONF_STALE_TRACKER_AGE: STALE_TRACKER_AGE.days,
+}
 
 USER_SCHEMA = vol.Schema(
     {
@@ -63,7 +81,17 @@ USER_SCHEMA = vol.Schema(
     }
 )
 
-OPTIONS_SCHEMA = vol.Schema({vol.Required(CONF_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR})
+OPTIONS_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR,
+        vol.Required(CONF_DETAILS_INTERVAL): _number(
+            MIN_DETAILS_INTERVAL, MAX_DETAILS_INTERVAL, "min"
+        ),
+        vol.Required(CONF_STALE_TRACKER_AGE): _number(
+            MIN_STALE_TRACKER_AGE, MAX_STALE_TRACKER_AGE, "d"
+        ),
+    }
+)
 
 REAUTH_SCHEMA = vol.Schema(
     {
@@ -150,22 +178,15 @@ class CiscoMEConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class CiscoMEOptionsFlow(OptionsFlow):
-    """Change the polling interval of a configured controller."""
+    """Change the intervals of a configured controller."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
-        """Show the polling interval."""
+        """Show the polling, details and cleanup settings."""
         if user_input is not None:
-            return self.async_create_entry(
-                data={CONF_SCAN_INTERVAL: int(user_input[CONF_SCAN_INTERVAL])}
-            )
+            return self.async_create_entry(data={k: int(v) for k, v in user_input.items()})
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(
-                OPTIONS_SCHEMA,
-                {
-                    CONF_SCAN_INTERVAL: self.config_entry.options.get(
-                        CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                    )
-                },
+                OPTIONS_SCHEMA, {**DEFAULT_OPTIONS, **self.config_entry.options}
             ),
         )

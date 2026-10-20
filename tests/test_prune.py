@@ -6,12 +6,13 @@ from unittest.mock import MagicMock
 from freezegun.api import FrozenDateTimeFactory
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
-from custom_components.cisco_mobility_express.const import DOMAIN
+from custom_components.cisco_mobility_express.const import CONF_STALE_TRACKER_AGE, DOMAIN
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
+from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from .conftest import LAPTOP, PHONE
+from .conftest import ENTRY_DATA, LAPTOP, PHONE
 
 PHONE_MAC = PHONE.macaddr.lower()
 
@@ -90,6 +91,26 @@ async def test_unknown_disabled_tracker_gets_grace_period(
     mock_controller.return_value.get_associated_devices.return_value = [PHONE]
     await _setup(hass, mock_config_entry)
     await _advance(hass, freezer, timedelta(days=29))
+    assert _tracker(hass, LAPTOP.macaddr)
+    await _advance(hass, freezer, timedelta(days=2))
+    assert not _tracker(hass, LAPTOP.macaddr)
+
+
+async def test_stale_tracker_age_option(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """The stale tracker age comes from the entry options."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=ENTRY_DATA[CONF_HOST],
+        data=ENTRY_DATA,
+        options={CONF_STALE_TRACKER_AGE: 2},
+    )
+    mock_controller.return_value.get_associated_devices.return_value = [PHONE]
+    await _setup(hass, entry)
+    await _advance(hass, freezer, timedelta(days=1))
     assert _tracker(hass, LAPTOP.macaddr)
     await _advance(hass, freezer, timedelta(days=2))
     assert not _tracker(hass, LAPTOP.macaddr)
