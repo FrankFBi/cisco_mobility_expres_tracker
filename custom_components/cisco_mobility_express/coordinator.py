@@ -19,6 +19,7 @@ from homeassistant.util import dt as dt_util
 from .client_details import ClientDetailsUnavailable, fetch_client_details
 from .const import (
     ATTR_MAC,
+    CONF_ALL_IPV6,
     CONF_DETAILS_INTERVAL,
     CONF_STALE_TRACKER_AGE,
     DETAILS_INTERVAL,
@@ -120,6 +121,7 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
                     self.controller.session,
                     self.controller.host_api_url,
                     due,
+                    self.config_entry.options.get(CONF_ALL_IPV6, False),
                 )
             except ClientDetailsUnavailable as err:
                 _LOGGER.info("Client IP and SSID details are not available: %s", err)

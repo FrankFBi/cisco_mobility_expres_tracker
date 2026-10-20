@@ -63,12 +63,14 @@
         "data": {
           "scan_interval": "Polling interval",
           "details_interval": "IP and SSID refresh interval",
-          "stale_tracker_age": "Remove disabled trackers after"
+          "stale_tracker_age": "Remove disabled trackers after",
+          "all_ipv6": "Fetch all IPv6 addresses"
         },
         "data_description": {
           "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller.",
-          "details_interval": "How often each connected client's IP and SSID are read from the controller's client detail page, in minutes (1–15). Each refresh costs one request per client. Only used on controllers that have the classic detail page (a full WLC).",
-          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again."
+          "details_interval": "How often each connected client's IP and SSID are read from the controller's client detail page, in minutes (1–15). Each refresh costs one request for all clients. Only used on controllers that have the classic detail page (a full WLC).",
+          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again.",
+          "all_ipv6": "Also read each client's detail page for the full ipv6 list. Costs one extra request per client per refresh. Off: ip, ipv4 and SSID come from a single request for all clients."
         }
       }
     }

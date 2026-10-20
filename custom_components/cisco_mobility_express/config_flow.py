@@ -30,6 +30,7 @@ from homeassistant.helpers.selector import (
 
 from . import create_controller
 from .const import (
+    CONF_ALL_IPV6,
     CONF_DETAILS_INTERVAL,
     CONF_STALE_TRACKER_AGE,
     DEFAULT_SSL,
@@ -68,6 +69,7 @@ DEFAULT_OPTIONS = {
     CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
     CONF_DETAILS_INTERVAL: int(DETAILS_INTERVAL.total_seconds() // 60),
     CONF_STALE_TRACKER_AGE: STALE_TRACKER_AGE.days,
+    CONF_ALL_IPV6: False,
 }
 
 USER_SCHEMA = vol.Schema(
@@ -90,6 +92,7 @@ OPTIONS_SCHEMA = vol.Schema(
         vol.Required(CONF_STALE_TRACKER_AGE): _number(
             MIN_STALE_TRACKER_AGE, MAX_STALE_TRACKER_AGE, "d"
         ),
+        vol.Required(CONF_ALL_IPV6): bool,
     }
 )
 
@@ -183,7 +186,9 @@ class CiscoMEOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Show the polling, details and cleanup settings."""
         if user_input is not None:
-            return self.async_create_entry(data={k: int(v) for k, v in user_input.items()})
+            return self.async_create_entry(
+                data={k: v if isinstance(v, bool) else int(v) for k, v in user_input.items()}
+            )
         return self.async_show_form(
             step_id="init",
             data_schema=self.add_suggested_values_to_schema(

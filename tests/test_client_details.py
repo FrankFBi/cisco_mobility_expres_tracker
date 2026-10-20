@@ -8,8 +8,12 @@ from freezegun.api import FrozenDateTimeFactory
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
-from custom_components.cisco_mobility_express.client_details import parse_client_details
+from custom_components.cisco_mobility_express.client_details import (
+    parse_client_details,
+    parse_client_list,
+)
 from custom_components.cisco_mobility_express.const import (
+    CONF_ALL_IPV6,
     CONF_DETAILS_INTERVAL,
     DETAILS_INTERVAL,
     DOMAIN,
@@ -186,3 +190,76 @@ async def test_details_interval_option(
     async_fire_time_changed(hass)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert session.post.call_count == 2
+
+
+def _list_row(index: int, mac: str, ip: str, ssid: str = "Bieling") -> str:
+    """Return a client row as served by a real WLC's client list."""
+    return (
+        f'<INPUT type="text" name="1.{index}.2.ms_addr" class="statictextboxlink" readonly '
+        f'SIZE="18" MAXLENGTH="18" VALUE="{mac}">\n'
+        f'<INPUT type=TEXT name="1.{index}.2.ms_ipaddr" class="statictextboxlist" readonly '
+        f'SIZE="46" MAXLENGTH="46" VALUE="{ip}">\n'
+        f'<INPUT type="TEXT" name="1.{index}.2.lrad_name" VALUE="AP3-Garage">\n'
+        f'<INPUT type="text" name="1.{index}.2.ms_profile" VALUE="{ssid}">\n'
+        f'<INPUT type="text" name="1.{index}.2.ms_ssid" class="statictextboxlist" readonly '
+        f'SIZE="21" MAXLENGTH="32" VALUE="{ssid}">\n'
+    )
+
+
+LISTED_HTML = (
+    LIST_HTML
+    + _list_row(0, "94:27:70:D0:09:75", "10.104.28.157")
+    + _list_row(1, "38:8a:06:db:78:08", "fddb:0:104:28::8")
+)
+
+
+def test_parse_client_list() -> None:
+    """IP and SSID of every client come from the list page."""
+    assert parse_client_list(LISTED_HTML) == {
+        "94:27:70:d0:09:75": {"ip": "10.104.28.157", "ipv4": "10.104.28.157", "SSID": "Bieling"},
+        "38:8a:06:db:78:08": {
+            "ip": "fddb:0:104:28::8",
+            "ipv6": ["fddb:0:104:28::8"],
+            "SSID": "Bieling",
+        },
+    }
+
+
+async def test_details_from_client_list(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Listed clients need no detail page request."""
+    session = _detail_session(mock_controller)
+    session.get.return_value = MagicMock(status_code=200, text=LISTED_HTML)
+    await _setup(hass, mock_config_entry)
+
+    state = hass.states.get(ENTITY)
+    assert state.attributes["ip"] == "10.104.28.157"
+    assert state.attributes["SSID"] == "Bieling"
+    assert "ipv6" not in state.attributes
+    assert session.get.call_count == 1
+    session.post.assert_not_called()
+
+
+async def test_all_ipv6_option(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+) -> None:
+    """With all IPv6 enabled, each client's detail page is read too."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=ENTRY_DATA[CONF_HOST],
+        data=ENTRY_DATA,
+        options={CONF_ALL_IPV6: True},
+    )
+    session = _detail_session(mock_controller)
+    session.get.return_value = MagicMock(status_code=200, text=LISTED_HTML)
+    await _setup(hass, entry)
+
+    assert session.post.call_count == 1
+    assert hass.states.get(ENTITY).attributes["ipv6"] == [
+        "fddb:0:104:28:9627:70ff:fed0:975",
+        "fe80::9627:70ff:fed0:975",
+    ]

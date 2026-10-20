@@ -13,6 +13,7 @@ DETAILS_INTERVAL = timedelta(minutes=5)
 MIN_DETAILS_INTERVAL = 1
 MAX_DETAILS_INTERVAL = 15
 CONF_DETAILS_INTERVAL = "details_interval"
+CONF_ALL_IPV6 = "all_ipv6"
 PRUNE_INTERVAL = timedelta(hours=1)
 STALE_TRACKER_AGE = timedelta(days=30)
 MIN_STALE_TRACKER_AGE = 1
