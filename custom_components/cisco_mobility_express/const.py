@@ -7,6 +7,8 @@ from homeassistant.const import Platform
 DOMAIN = "cisco_mobility_express"
 PLATFORMS = [Platform.DEVICE_TRACKER, Platform.SENSOR]
 SCAN_INTERVAL = timedelta(seconds=30)
+MIN_SCAN_INTERVAL = 30
+MAX_SCAN_INTERVAL = 300
 DETAILS_INTERVAL = timedelta(minutes=5)
 PRUNE_INTERVAL = timedelta(hours=1)
 STALE_TRACKER_AGE = timedelta(days=30)

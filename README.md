@@ -39,6 +39,9 @@ Settings → Devices & services → Add integration → **Cisco Mobility Express
 | Username / Password | An account with administrative privileges |
 | Use HTTPS | Connect over HTTPS instead of HTTP (default off) |
 | Verify SSL certificate | Turn off for self-signed certificates (default on) |
+| Polling interval | Seconds between polls of the client list, 30–300 (default 30) |
+
+To change the polling interval later, go to the integration's page and click **Configure**. The change applies at the next poll, without a restart. On large setups, a longer interval reduces the load on the controller, but trackers and sensors then react more slowly. IP and SSID details are still refreshed at most every 5 minutes per client.
 
 If the controller later rejects the credentials, Home Assistant prompts you to reauthenticate.
 
@@ -50,7 +53,7 @@ If the controller later rejects the credentials, Home Assistant prompts you to r
 
 ## Entities
 
-There is one `device_tracker` entity per client MAC address the controller has reported. It is `home` while the client is associated and `not_home` after it leaves. Attributes include the hostname (`clId`) and whatever the controller's client table reports, such as `AP`, `PT` and `SS`. The controller is polled every 30 seconds.
+There is one `device_tracker` entity per client MAC address the controller has reported. It is `home` while the client is associated and `not_home` after it leaves. Attributes include the hostname (`clId`) and whatever the controller's client table reports, such as `AP`, `PT` and `SS`. The controller is polled every 30 seconds by default (see *Polling interval* above).
 
 On controllers with the classic AireOS client detail page, such as a Cisco WLC, each client's detail page is also read for:
 
