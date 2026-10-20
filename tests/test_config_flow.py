@@ -1,6 +1,7 @@
 """Config flow tests."""
 
 from datetime import timedelta
+from typing import Any
 from unittest.mock import MagicMock
 
 from ciscomobilityexpress.exceptions import CiscoMELoginError
@@ -10,7 +11,7 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from custom_components.cisco_mobility_express.const import (
     CONF_ALL_IPV6,
-    CONF_DETAILS_INTERVAL,
+    CONF_IPV6_POLLING_INTERVAL,
     CONF_STALE_TRACKER_AGE,
     DOMAIN,
 )
@@ -64,37 +65,37 @@ async def test_options_flow(
         await hass.config_entries.options.async_configure(
             result["flow_id"], {CONF_SCAN_INTERVAL: 301}
         )
+
+    def _input(**changes: Any) -> dict[str, Any]:
+        values = {
+            CONF_SCAN_INTERVAL: 300,
+            CONF_STALE_TRACKER_AGE: 60,
+            CONF_ALL_IPV6: True,
+            CONF_IPV6_POLLING_INTERVAL: 15,
+        } | changes
+        return {
+            CONF_SCAN_INTERVAL: values[CONF_SCAN_INTERVAL],
+            CONF_STALE_TRACKER_AGE: values[CONF_STALE_TRACKER_AGE],
+            "ipv6": {
+                CONF_ALL_IPV6: values[CONF_ALL_IPV6],
+                CONF_IPV6_POLLING_INTERVAL: values[CONF_IPV6_POLLING_INTERVAL],
+            },
+        }
+
     for invalid in (
-        {CONF_DETAILS_INTERVAL: 0},
-        {CONF_DETAILS_INTERVAL: 16},
+        {CONF_IPV6_POLLING_INTERVAL: 0},
+        {CONF_IPV6_POLLING_INTERVAL: 16},
         {CONF_STALE_TRACKER_AGE: 0},
         {CONF_STALE_TRACKER_AGE: 61},
     ):
         with pytest.raises(InvalidData):
-            await hass.config_entries.options.async_configure(
-                result["flow_id"],
-                {
-                    CONF_SCAN_INTERVAL: 30,
-                    CONF_DETAILS_INTERVAL: 5,
-                    CONF_STALE_TRACKER_AGE: 30,
-                    CONF_ALL_IPV6: False,
-                }
-                | invalid,
-            )
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        {
-            CONF_SCAN_INTERVAL: 300,
-            CONF_DETAILS_INTERVAL: 15,
-            CONF_STALE_TRACKER_AGE: 60,
-            CONF_ALL_IPV6: True,
-        },
-    )
+            await hass.config_entries.options.async_configure(result["flow_id"], _input(**invalid))
+    result = await hass.config_entries.options.async_configure(result["flow_id"], _input())
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert mock_config_entry.options == {
         CONF_SCAN_INTERVAL: 300,
-        CONF_DETAILS_INTERVAL: 15,
+        CONF_IPV6_POLLING_INTERVAL: 15,
         CONF_STALE_TRACKER_AGE: 60,
         CONF_ALL_IPV6: True,
     }

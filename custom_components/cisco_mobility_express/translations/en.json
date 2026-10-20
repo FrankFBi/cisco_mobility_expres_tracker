@@ -65,17 +65,27 @@
         "title": "Cisco Mobility Express options",
         "data": {
           "scan_interval": "Polling interval",
-          "details_interval": "IP and SSID refresh interval",
-          "stale_tracker_age": "Remove disabled trackers after",
-          "all_ipv6": "Fetch all IPv6 addresses"
+          "stale_tracker_age": "Remove disabled trackers after"
         },
         "data_description": {
-          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller.",
-          "details_interval": "How often the IP address and SSID of each connected client are refreshed, in minutes (1–15). One request covers all clients. Only used on a full WLC; Mobility Express has no effect.",
-          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again.",
-          "all_ipv6": "Off (default): the ip, ipv4 and SSID attributes come from a single request for all clients. On: each client's detail page is also read for the ipv6 attribute with all IPv6 addresses, including link-local. That costs one extra request per client per refresh, so leave it off on large setups unless you need it."
+          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Each poll also reads the client list for the ip, ipv4 and SSID attributes. Increase it on large setups to reduce the load on the controller.",
+          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again."
         },
-        "description": "Settings that limit the load on the controller. Changes apply immediately, without a restart."
+        "description": "Settings that limit the load on the controller. Changes apply immediately, without a restart.",
+        "sections": {
+          "ipv6": {
+            "name": "IPv6 addresses",
+            "description": "Only used on a full WLC; on Mobility Express these settings have no effect.",
+            "data": {
+              "all_ipv6": "Fetch all IPv6 addresses",
+              "ipv6_polling_interval": "IPv6 polling interval"
+            },
+            "data_description": {
+              "all_ipv6": "Off (default): the ipv6 attribute only holds an IPv6-only client's address from the client list. On: each client's detail page is also read for all its IPv6 addresses, including link-local. That costs one extra request per client, so leave it off on large setups unless you need it.",
+              "ipv6_polling_interval": "How often each client's detail page is read for its IPv6 addresses, in minutes (1–15). Only used when Fetch all IPv6 addresses is on."
+            }
+          }
+        }
       }
     }
   }
