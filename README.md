@@ -6,27 +6,29 @@ This is a config-entry (UI) port of the core [`cisco_mobility_express`](https://
 
 ## Installation
 
+### HACS
+
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FrankFBi&repository=cisco_mobility_expres_tracker&category=integration)
+
+1. Click the button above, or go to HACS → ⋮ → Custom repositories and add `https://github.com/FrankFBi/cisco_mobility_expres_tracker` (type *Integration*).
+2. Install **Cisco Mobility Express** and restart Home Assistant.
+
+HACS installs the release zip (`zip_release` in `hacs.json`), the same file as the manual install below.
+
 ### From a release zip
 
-1. Download `cisco_mobility_express.zip` from the latest release on the [Releases page](https://github.com/FrankFBi/cisco_mobility_expres_tracker/releases). The repository is private, so you need to be signed in to GitHub with access to it.
+1. Download `cisco_mobility_express.zip` from the latest release on the [Releases page](https://github.com/FrankFBi/cisco_mobility_expres_tracker/releases).
 2. Create the folder `<config>/custom_components/cisco_mobility_express/` and unzip the archive into it, so that `manifest.json` ends up directly in that folder. You can reach `<config>` with the Samba share, SSH or File editor apps.
 3. Restart Home Assistant.
 
 To update, delete the contents of that folder, unzip the new release into it and restart.
 
-### HACS (once the repository is public)
-
-HACS only works with public repositories. `hacs.json` is already set up to install the same release zip (`zip_release`), so once the repository is public:
-
-1. HACS → ⋮ → Custom repositories → add `https://github.com/FrankFBi/cisco_mobility_expres_tracker` (type *Integration*).
-2. Install **Cisco Mobility Express** and restart Home Assistant.
-
 ## Releasing
 
-Push a tag like `v1.0.1`. The release workflow sets `version` in `manifest.json` from the tag, builds `cisco_mobility_express.zip` and publishes a GitHub release with that zip attached.
+Set `version` in `manifest.json` on `main` to the new version, then push a matching tag like `v1.4.1`. The release workflow also sets `version` from the tag, builds `cisco_mobility_express.zip` and publishes a GitHub release with that zip attached.
 
 ```bash
-git tag v1.0.1 && git push origin v1.0.1
+git tag v1.4.1 && git push origin v1.4.1
 ```
 
 ## Configuration
