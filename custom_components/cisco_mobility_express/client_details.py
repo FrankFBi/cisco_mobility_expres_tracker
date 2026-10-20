@@ -62,6 +62,19 @@ def _build_details(addresses: list[str], ssid: str) -> dict[str, Any]:
     return details
 
 
+def needs_detail_page(details: dict[str, Any] | None) -> bool:
+    """Return True unless the client has an IPv4 or a non-link-local IPv6 address.
+
+    The client list only shows one address; for IPv6-only clients that is often
+    the link-local one, while the detail page also lists the global address.
+    """
+    if not details:
+        return True
+    return "ipv4" not in details and all(
+        ipaddress.IPv6Address(a).is_link_local for a in details.get("ipv6", [])
+    )
+
+
 def parse_client_details(html: str) -> dict[str, Any]:
     """Extract IPv4, IPv6 and SSID from a client detail page."""
     addresses = [m.group(1)] if (m := _IPV4.search(html)) else []
@@ -90,7 +103,8 @@ def fetch_client_details(
     """Fetch the client list, plus detail pages for the given MACs (blocking).
 
     One request for the client list covers every listed client. A client's
-    detail page is only requested when it is missing from the list or when
+    detail page is only requested when the list has no usable address for it
+    (missing, or IPv6 link-local only) or when
     all_ipv6 is set, as only that page lists every IPv6 address.
 
     Returns (listed clients, detail pages). Raises ClientDetailsUnavailable if
@@ -103,7 +117,7 @@ def fetch_client_details(
 
     listed = parse_client_list(response.text)
     results: dict[str, dict[str, Any]] = {}
-    for mac in macs if all_ipv6 else [mac for mac in macs if mac not in listed]:
+    for mac in macs if all_ipv6 else [mac for mac in macs if needs_detail_page(listed.get(mac))]:
         response = session.post(
             list_url,
             data={
