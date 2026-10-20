@@ -9,6 +9,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from custom_components.cisco_mobility_express.const import (
+    CONF_ALL_IPV6,
     CONF_DETAILS_INTERVAL,
     CONF_STALE_TRACKER_AGE,
     DOMAIN,
@@ -72,12 +73,22 @@ async def test_options_flow(
         with pytest.raises(InvalidData):
             await hass.config_entries.options.async_configure(
                 result["flow_id"],
-                {CONF_SCAN_INTERVAL: 30, CONF_DETAILS_INTERVAL: 5, CONF_STALE_TRACKER_AGE: 30}
+                {
+                    CONF_SCAN_INTERVAL: 30,
+                    CONF_DETAILS_INTERVAL: 5,
+                    CONF_STALE_TRACKER_AGE: 30,
+                    CONF_ALL_IPV6: False,
+                }
                 | invalid,
             )
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        {CONF_SCAN_INTERVAL: 300, CONF_DETAILS_INTERVAL: 15, CONF_STALE_TRACKER_AGE: 60},
+        {
+            CONF_SCAN_INTERVAL: 300,
+            CONF_DETAILS_INTERVAL: 15,
+            CONF_STALE_TRACKER_AGE: 60,
+            CONF_ALL_IPV6: True,
+        },
     )
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
@@ -85,6 +96,7 @@ async def test_options_flow(
         CONF_SCAN_INTERVAL: 300,
         CONF_DETAILS_INTERVAL: 15,
         CONF_STALE_TRACKER_AGE: 60,
+        CONF_ALL_IPV6: True,
     }
     assert mock_config_entry.runtime_data.update_interval == timedelta(seconds=300)
 

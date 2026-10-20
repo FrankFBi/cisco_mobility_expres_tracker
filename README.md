@@ -48,7 +48,8 @@ Click **Configure** on the integration's page to change these settings. Changes 
 | Option | Range (default) | Description |
 | --- | --- | --- |
 | Polling interval | 30–300 s (30) | How often the client list is read. A longer interval reduces the load on large controllers, but trackers and sensors react more slowly. |
-| IP and SSID refresh interval | 1–15 min (5) | How often each connected client's detail page is read for `ip`, `ipv4`, `ipv6` and `SSID`. Costs one request per client. **Only used on a full WLC.** Mobility Express doesn't serve that page as far as we know; the integration then stops asking after the first try and this setting has no effect. |
+| IP and SSID refresh interval | 1–15 min (5) | How often `ip`, `ipv4` and `SSID` are read from the controller's client list, one request for all clients. **Only used on a full WLC.** Mobility Express doesn't serve that page as far as we know; the integration then stops asking after the first try and this setting has no effect. |
+| Fetch all IPv6 addresses | off | Also read each client's detail page for the full `ipv6` list. Costs one extra request per client per refresh, so leave it off on large setups unless you need it. |
 | Remove disabled trackers after | 1–60 days (30) | See [Cleanup of unused trackers](#cleanup-of-unused-trackers). |
 
 If the controller later rejects the credentials, Home Assistant prompts you to reauthenticate.
@@ -63,16 +64,16 @@ If the controller later rejects the credentials, Home Assistant prompts you to r
 
 There is one `device_tracker` entity per client MAC address the controller has reported. It is `home` while the client is associated and `not_home` after it leaves. Attributes include the hostname (`clId`) and whatever the controller's client table reports, such as `AP`, `PT` and `SS`. The controller is polled every 30 seconds by default (see *Polling interval* above).
 
-On controllers with the classic AireOS client detail page, such as a Cisco WLC, each client's detail page is also read for:
+On controllers with the classic AireOS web UI, such as a Cisco WLC, the client list is also read for:
 
 | Attribute | Value |
 |---|---|
 | `ip` | IPv4 address, or the first global IPv6 address if the client has no IPv4 |
 | `ipv4` | IPv4 address |
-| `ipv6` | All IPv6 addresses, including link-local |
+| `ipv6` | IPv6 address from the client list; with *Fetch all IPv6 addresses* on, all IPv6 addresses including link-local |
 | `SSID` | WLAN SSID |
 
-Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes (see *IP and SSID refresh interval* under [Options](#options)). Controllers without that page are tracked as before, without these attributes.
+Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes (see *IP and SSID refresh interval* under [Options](#options)). A client missing from the list (for example on a later page of a very large list) gets its own detail page request instead. Controllers without these pages are tracked as before, without these attributes.
 
 ### Cleanup of unused trackers
 
