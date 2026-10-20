@@ -6,6 +6,8 @@ This is a config-entry (UI) port of the core [`cisco_mobility_express`](https://
 
 ## Installation
 
+> **Upgrading from the core YAML tracker?** First remove the `cisco_mobility_express` platform from `configuration.yaml`, see [Migrating from the YAML platform](#migrating-from-the-yaml-platform). This integration has no YAML support, so a leftover entry only produces errors.
+
 ### HACS
 
 [![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=FrankFBi&repository=cisco_mobility_expres_tracker&category=integration)
@@ -58,9 +60,20 @@ If the controller later rejects the credentials, Home Assistant prompts you to r
 
 ## Migrating from the YAML platform
 
-1. Remove the `- platform: cisco_mobility_express` entry under `device_tracker:` in `configuration.yaml`.
-2. Install this integration, restart, and add it through the UI with the same settings.
-3. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** unless its MAC address already belongs to a device from another integration. Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
+Do these steps in this order:
+
+1. Remove the `cisco_mobility_express` entry under `device_tracker:` in `configuration.yaml`, for example:
+   ```yaml
+   device_tracker:
+     - platform: cisco_mobility_express  # remove this entry
+       host: 192.168.10.150
+       username: !secret me_username
+       password: !secret me_password
+   ```
+   If it was the only entry, remove the `device_tracker:` line too.
+2. Install this integration and restart Home Assistant.
+3. Add it through the UI (Settings → Devices & services → Add integration) with the same host and credentials.
+4. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** unless its MAC address already belongs to a device from another integration. Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
 
 ## Entities
 
