@@ -8,12 +8,14 @@
           "username": "Username",
           "password": "Password",
           "ssl": "Use HTTPS",
-          "verify_ssl": "Verify SSL certificate"
+          "verify_ssl": "Verify SSL certificate",
+          "scan_interval": "Polling interval"
         },
         "data_description": {
           "host": "The IP address or hostname of your controller, for example 192.168.10.150.",
           "username": "A user with administrative privileges.",
-          "verify_ssl": "Turn off if the controller uses a self-signed certificate."
+          "verify_ssl": "Turn off if the controller uses a self-signed certificate.",
+          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller."
         }
       },
       "reauth_confirm": {
@@ -51,6 +53,19 @@
       },
       "band": {
         "name": "Band"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Cisco Mobility Express options",
+        "data": {
+          "scan_interval": "Polling interval"
+        },
+        "data_description": {
+          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller."
+        }
       }
     }
   }

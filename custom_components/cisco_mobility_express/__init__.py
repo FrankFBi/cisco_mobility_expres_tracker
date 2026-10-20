@@ -3,6 +3,7 @@
 from ciscomobilityexpress.ciscome import CiscoMobilityExpress
 from ciscomobilityexpress.exceptions import CiscoMELoginError
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -18,6 +19,7 @@ from .coordinator import (
     CONNECTION_ERRORS,
     CiscoMEConfigEntry,
     CiscoMEDataUpdateCoordinator,
+    scan_interval,
 )
 from .device_tracker import last_seen_store
 from .devices import async_sync_client_devices
@@ -49,7 +51,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> b
     async_sync_client_devices(hass, entry)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Apply a changed polling interval without reloading."""
+    entry.runtime_data.update_interval = scan_interval(entry)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> bool:

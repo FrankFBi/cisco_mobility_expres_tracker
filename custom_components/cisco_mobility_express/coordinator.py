@@ -1,6 +1,6 @@
 """Data update coordinator for Cisco Mobility Express."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 from typing import Any
 
@@ -9,6 +9,7 @@ from ciscomobilityexpress.exceptions import CiscoMELoginError, CiscoMEPageNotFou
 from requests.exceptions import RequestException
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.device_registry import format_mac
@@ -33,6 +34,11 @@ CONNECTION_ERRORS = (
 )
 
 
+def scan_interval(entry: ConfigEntry) -> timedelta:
+    """Return the polling interval chosen for the entry."""
+    return timedelta(seconds=entry.options.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL.total_seconds()))
+
+
 class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
     """Poll the controller for associated wireless clients."""
 
@@ -50,7 +56,7 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
             _LOGGER,
             config_entry=config_entry,
             name=DOMAIN,
-            update_interval=SCAN_INTERVAL,
+            update_interval=scan_interval(config_entry),
         )
         self.controller = controller
         self._details_supported = True
