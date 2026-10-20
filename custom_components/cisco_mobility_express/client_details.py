@@ -86,14 +86,15 @@ def parse_client_list(html: str) -> dict[str, dict[str, Any]]:
 
 def fetch_client_details(
     session: Session, base_url: str, macs: list[str], all_ipv6: bool = False
-) -> dict[str, dict[str, Any]]:
-    """Fetch details for the given client MACs (blocking).
+) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+    """Fetch the client list, plus detail pages for the given MACs (blocking).
 
     One request for the client list covers every listed client. A client's
     detail page is only requested when it is missing from the list or when
     all_ipv6 is set, as only that page lists every IPv6 address.
 
-    Raises ClientDetailsUnavailable if the controller has no detail page.
+    Returns (listed clients, detail pages). Raises ClientDetailsUnavailable if
+    the controller has no client list page.
     """
     list_url = f"{base_url}{CLIENT_LIST_PATH}"
     response = session.get(list_url)
@@ -101,7 +102,7 @@ def fetch_client_details(
         raise ClientDetailsUnavailable(f"{list_url} returned HTTP {response.status_code}")
 
     listed = parse_client_list(response.text)
-    results = {mac: listed[mac] for mac in macs if mac in listed}
+    results: dict[str, dict[str, Any]] = {}
     for mac in macs if all_ipv6 else [mac for mac in macs if mac not in listed]:
         response = session.post(
             list_url,
@@ -117,4 +118,4 @@ def fetch_client_details(
         if response.status_code != 200:
             _LOGGER.debug("Client detail for %s returned HTTP %s", mac, response.status_code)
         results[mac] = parse_client_details(response.text) if response.status_code == 200 else {}
-    return results
+    return listed, results

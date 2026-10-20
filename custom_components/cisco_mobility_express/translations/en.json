@@ -15,8 +15,11 @@
           "host": "The IP address or hostname of your controller, for example 192.168.10.150.",
           "username": "A user with administrative privileges.",
           "verify_ssl": "Turn off if the controller uses a self-signed certificate.",
-          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller."
-        }
+          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller.",
+          "password": "The password of that user.",
+          "ssl": "Connect over HTTPS. Turn off if the controller only accepts HTTP or uses old TLS settings."
+        },
+        "description": "Connect to a Cisco Mobility Express or WLC controller. Every wireless client becomes a device tracker, disabled until you enable it."
       },
       "reauth_confirm": {
         "title": "Reauthenticate",
@@ -62,15 +65,26 @@
         "title": "Cisco Mobility Express options",
         "data": {
           "scan_interval": "Polling interval",
-          "details_interval": "IP and SSID refresh interval",
-          "stale_tracker_age": "Remove disabled trackers after",
-          "all_ipv6": "Fetch all IPv6 addresses"
+          "stale_tracker_age": "Remove disabled trackers after"
         },
         "data_description": {
-          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Increase it on large setups to reduce the load on the controller.",
-          "details_interval": "How often each connected client's IP and SSID are read from the controller's client detail page, in minutes (1–15). Each refresh costs one request for all clients. Only used on controllers that have the classic detail page (a full WLC).",
-          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again.",
-          "all_ipv6": "Also read each client's detail page for the full ipv6 list. Costs one extra request per client per refresh. Off: ip, ipv4 and SSID come from a single request for all clients."
+          "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Each poll also reads the client list for the ip, ipv4 and SSID attributes. Increase it on large setups to reduce the load on the controller.",
+          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again."
+        },
+        "description": "Settings that limit the load on the controller. Changes apply immediately, without a restart.",
+        "sections": {
+          "ipv6": {
+            "name": "IPv6 addresses",
+            "description": "Only used on a full WLC; on Mobility Express these settings have no effect.",
+            "data": {
+              "all_ipv6": "Fetch all IPv6 addresses",
+              "ipv6_polling_interval": "IPv6 polling interval"
+            },
+            "data_description": {
+              "all_ipv6": "Off (default): the ipv6 attribute only holds an IPv6-only client's address from the client list. On: each client's detail page is also read for all its IPv6 addresses, including link-local. That costs one extra request per client, so leave it off on large setups unless you need it.",
+              "ipv6_polling_interval": "How often each client's detail page is read for its IPv6 addresses, in minutes (1–15). Only used when Fetch all IPv6 addresses is on."
+            }
+          }
         }
       }
     }

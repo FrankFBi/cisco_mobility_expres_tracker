@@ -48,8 +48,8 @@ Click **Configure** on the integration's page to change these settings. Changes 
 | Option | Range (default) | Description |
 | --- | --- | --- |
 | Polling interval | 30–300 s (30) | How often the client list is read. A longer interval reduces the load on large controllers, but trackers and sensors react more slowly. |
-| IP and SSID refresh interval | 1–15 min (5) | How often `ip`, `ipv4` and `SSID` are read from the controller's client list, one request for all clients. **Only used on a full WLC.** Mobility Express doesn't serve that page as far as we know; the integration then stops asking after the first try and this setting has no effect. |
-| Fetch all IPv6 addresses | off | Also read each client's detail page for the full `ipv6` list. Costs one extra request per client per refresh, so leave it off on large setups unless you need it. |
+| IPv6 › Fetch all IPv6 addresses | off | Also read each client's detail page for the full `ipv6` list. Costs one extra request per client, so leave it off on large setups unless you need it. **Only used on a full WLC.** |
+| IPv6 › IPv6 polling interval | 1–15 min (5) | How often those detail pages are read. Only used when *Fetch all IPv6 addresses* is on. |
 | Remove disabled trackers after | 1–60 days (30) | See [Cleanup of unused trackers](#cleanup-of-unused-trackers). |
 
 If the controller later rejects the credentials, Home Assistant prompts you to reauthenticate.
@@ -73,7 +73,7 @@ On controllers with the classic AireOS web UI, such as a Cisco WLC, the client l
 | `ipv6` | IPv6 address from the client list; with *Fetch all IPv6 addresses* on, all IPv6 addresses including link-local |
 | `SSID` | WLAN SSID |
 
-Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes (see *IP and SSID refresh interval* under [Options](#options)). A client missing from the list (for example on a later page of a very large list) gets its own detail page request instead. Controllers without these pages are tracked as before, without these attributes.
+Attributes the controller doesn't report are left out. The client list is read on every poll (one request for all clients). Mobility Express doesn't serve it as far as we know; the integration then stops asking after the first try. A client missing from the list (for example on a later page of a very large list) gets its own detail page request instead. Controllers without these pages are tracked as before, without these attributes.
 
 ### Cleanup of unused trackers
 

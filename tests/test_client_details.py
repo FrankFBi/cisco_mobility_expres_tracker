@@ -14,9 +14,9 @@ from custom_components.cisco_mobility_express.client_details import (
 )
 from custom_components.cisco_mobility_express.const import (
     CONF_ALL_IPV6,
-    CONF_DETAILS_INTERVAL,
-    DETAILS_INTERVAL,
+    CONF_IPV6_POLLING_INTERVAL,
     DOMAIN,
+    IPV6_POLLING_INTERVAL,
     SCAN_INTERVAL,
 )
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
@@ -96,7 +96,7 @@ async def test_details_added_to_entity(
     mock_config_entry: MockConfigEntry,
     freezer: FrozenDateTimeFactory,
 ) -> None:
-    """IP and SSID are merged in and refreshed every DETAILS_INTERVAL."""
+    """Unlisted clients get their detail page every IPV6_POLLING_INTERVAL."""
     session = _detail_session(mock_controller)
     await _setup(hass, mock_config_entry)
 
@@ -120,7 +120,7 @@ async def test_details_added_to_entity(
     assert hass.states.get(ENTITY).attributes["SSID"] == "Bieling"
 
     session.post.return_value = MagicMock(status_code=200, text=_with("0.0.0.0", "2001:db8::5"))
-    freezer.tick(DETAILS_INTERVAL)
+    freezer.tick(IPV6_POLLING_INTERVAL)
     async_fire_time_changed(hass)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert session.post.call_count == 2
@@ -143,7 +143,7 @@ async def test_details_unsupported(
     assert "ip" not in state.attributes
     assert "SSID" not in state.attributes
 
-    freezer.tick(DETAILS_INTERVAL)
+    freezer.tick(IPV6_POLLING_INTERVAL)
     async_fire_time_changed(hass)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert session.get.call_count == 1
@@ -165,17 +165,40 @@ async def test_details_error_keeps_tracking(
     assert "ip" not in state.attributes
 
 
+async def test_client_list_read_every_poll(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    mock_config_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """IP and SSID from the client list follow the polling interval."""
+    session = _detail_session(mock_controller)
+    session.get.return_value = MagicMock(status_code=200, text=LISTED_HTML)
+    await _setup(hass, mock_config_entry)
+    assert hass.states.get(ENTITY).attributes["ip"] == "10.104.28.157"
+
+    session.get.return_value = MagicMock(
+        status_code=200, text=LIST_HTML + _list_row(0, "94:27:70:d0:09:75", "10.104.28.200")
+    )
+    freezer.tick(SCAN_INTERVAL)
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert hass.states.get(ENTITY).attributes["ip"] == "10.104.28.200"
+    assert session.get.call_count == 2
+    session.post.assert_not_called()
+
+
 async def test_details_interval_option(
     hass: HomeAssistant,
     mock_controller: MagicMock,
     freezer: FrozenDateTimeFactory,
 ) -> None:
-    """The details refresh interval comes from the entry options."""
+    """The IPv6 polling interval comes from the entry options."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id=ENTRY_DATA[CONF_HOST],
         data=ENTRY_DATA,
-        options={CONF_DETAILS_INTERVAL: 1},
+        options={CONF_IPV6_POLLING_INTERVAL: 1},
     )
     session = _detail_session(mock_controller)
     await _setup(hass, entry)

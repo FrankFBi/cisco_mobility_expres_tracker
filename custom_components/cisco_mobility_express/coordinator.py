@@ -20,10 +20,10 @@ from .client_details import ClientDetailsUnavailable, fetch_client_details
 from .const import (
     ATTR_MAC,
     CONF_ALL_IPV6,
-    CONF_DETAILS_INTERVAL,
+    CONF_IPV6_POLLING_INTERVAL,
     CONF_STALE_TRACKER_AGE,
-    DETAILS_INTERVAL,
     DOMAIN,
+    IPV6_POLLING_INTERVAL,
     SCAN_INTERVAL,
     STALE_TRACKER_AGE,
 )
@@ -48,10 +48,12 @@ def scan_interval(entry: ConfigEntry) -> timedelta:
     return timedelta(seconds=entry.options.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL.total_seconds()))
 
 
-def details_interval(entry: ConfigEntry) -> timedelta:
-    """Return how often each client's IP and SSID details are refreshed."""
+def ipv6_polling_interval(entry: ConfigEntry) -> timedelta:
+    """Return how often each client's detail page is read for all IPv6 addresses."""
     return timedelta(
-        minutes=entry.options.get(CONF_DETAILS_INTERVAL, DETAILS_INTERVAL.total_seconds() / 60)
+        minutes=entry.options.get(
+            CONF_IPV6_POLLING_INTERVAL, IPV6_POLLING_INTERVAL.total_seconds() / 60
+        )
     )
 
 
@@ -81,6 +83,7 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
         )
         self.controller = controller
         self._details_supported = True
+        self._listed: dict[str, dict[str, Any]] = {}
         self._details: dict[str, tuple[datetime, dict[str, Any]]] = {}
 
     async def _async_update_data(self) -> dict[str, dict[str, Any]]:
@@ -105,33 +108,36 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
         return clients
 
     async def _async_update_details(self, clients: dict[str, dict[str, Any]]) -> None:
-        """Merge IP and SSID details, refreshing each client every details interval."""
+        """Merge IP and SSID from the client list, and detail pages when due."""
         now = dt_util.utcnow()
-        refresh = details_interval(self.config_entry)
+        refresh = ipv6_polling_interval(self.config_entry)
+        all_ipv6 = self.config_entry.options.get(CONF_ALL_IPV6, False)
         self._details = {mac: d for mac, d in self._details.items() if mac in clients}
         due = [
             mac
             for mac in clients
             if mac not in self._details or now - self._details[mac][0] >= refresh
         ]
-        if due:
-            try:
-                fetched = await self.hass.async_add_executor_job(
-                    fetch_client_details,
-                    self.controller.session,
-                    self.controller.host_api_url,
-                    due,
-                    self.config_entry.options.get(CONF_ALL_IPV6, False),
-                )
-            except ClientDetailsUnavailable as err:
-                _LOGGER.info("Client IP and SSID details are not available: %s", err)
-                self._details_supported = False
-                return
-            except RequestException as err:
-                _LOGGER.debug("Error fetching client details: %s", err)
-            else:
-                self._details.update({mac: (now, d) for mac, d in fetched.items()})
+        try:
+            self._listed, fetched = await self.hass.async_add_executor_job(
+                fetch_client_details,
+                self.controller.session,
+                self.controller.host_api_url,
+                due,
+                all_ipv6,
+            )
+        except ClientDetailsUnavailable as err:
+            _LOGGER.info("Client IP and SSID details are not available: %s", err)
+            self._details_supported = False
+            return
+        except RequestException as err:
+            _LOGGER.debug("Error fetching client details: %s", err)
+        else:
+            self._details.update({mac: (now, d) for mac, d in fetched.items()})
 
-        for mac, (_, details) in self._details.items():
+        for mac, client in clients.items():
+            details = self._listed.get(mac, {})
+            if (all_ipv6 or not details) and mac in self._details:
+                details = self._details[mac][1]
             for key, value in details.items():
-                clients[mac].setdefault(key, value)
+                client.setdefault(key, value)

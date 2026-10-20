@@ -22,6 +22,7 @@ from homeassistant.const import (
     CONF_VERIFY_SSL,
 )
 from homeassistant.core import callback
+from homeassistant.data_entry_flow import section
 from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
@@ -31,16 +32,16 @@ from homeassistant.helpers.selector import (
 from . import create_controller
 from .const import (
     CONF_ALL_IPV6,
-    CONF_DETAILS_INTERVAL,
+    CONF_IPV6_POLLING_INTERVAL,
     CONF_STALE_TRACKER_AGE,
     DEFAULT_SSL,
     DEFAULT_VERIFY_SSL,
-    DETAILS_INTERVAL,
     DOMAIN,
-    MAX_DETAILS_INTERVAL,
+    IPV6_POLLING_INTERVAL,
+    MAX_IPV6_POLLING_INTERVAL,
     MAX_SCAN_INTERVAL,
     MAX_STALE_TRACKER_AGE,
-    MIN_DETAILS_INTERVAL,
+    MIN_IPV6_POLLING_INTERVAL,
     MIN_SCAN_INTERVAL,
     MIN_STALE_TRACKER_AGE,
     SCAN_INTERVAL,
@@ -49,6 +50,8 @@ from .const import (
 from .coordinator import CONNECTION_ERRORS
 
 _LOGGER = logging.getLogger(__name__)
+
+IPV6_SECTION = "ipv6"
 
 
 def _number(minimum: int, maximum: int, unit: str) -> NumberSelector:
@@ -67,7 +70,7 @@ SCAN_INTERVAL_SELECTOR = _number(MIN_SCAN_INTERVAL, MAX_SCAN_INTERVAL, "s")
 DEFAULT_SCAN_INTERVAL = int(SCAN_INTERVAL.total_seconds())
 DEFAULT_OPTIONS = {
     CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
-    CONF_DETAILS_INTERVAL: int(DETAILS_INTERVAL.total_seconds() // 60),
+    CONF_IPV6_POLLING_INTERVAL: int(IPV6_POLLING_INTERVAL.total_seconds() // 60),
     CONF_STALE_TRACKER_AGE: STALE_TRACKER_AGE.days,
     CONF_ALL_IPV6: False,
 }
@@ -86,15 +89,22 @@ USER_SCHEMA = vol.Schema(
 OPTIONS_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_SCAN_INTERVAL): SCAN_INTERVAL_SELECTOR,
-        vol.Required(CONF_DETAILS_INTERVAL): _number(
-            MIN_DETAILS_INTERVAL, MAX_DETAILS_INTERVAL, "min"
-        ),
         vol.Required(CONF_STALE_TRACKER_AGE): _number(
             MIN_STALE_TRACKER_AGE, MAX_STALE_TRACKER_AGE, "d"
         ),
-        vol.Required(CONF_ALL_IPV6): bool,
+        vol.Required(IPV6_SECTION): section(
+            vol.Schema(
+                {
+                    vol.Required(CONF_ALL_IPV6): bool,
+                    vol.Required(CONF_IPV6_POLLING_INTERVAL): _number(
+                        MIN_IPV6_POLLING_INTERVAL, MAX_IPV6_POLLING_INTERVAL, "min"
+                    ),
+                }
+            )
+        ),
     }
 )
+IPV6_OPTIONS = (CONF_ALL_IPV6, CONF_IPV6_POLLING_INTERVAL)
 
 REAUTH_SCHEMA = vol.Schema(
     {
@@ -186,12 +196,15 @@ class CiscoMEOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Show the polling, details and cleanup settings."""
         if user_input is not None:
+            ipv6 = user_input.pop(IPV6_SECTION)
+            flat = {**user_input, **ipv6}
             return self.async_create_entry(
-                data={k: v if isinstance(v, bool) else int(v) for k, v in user_input.items()}
+                data={k: v if isinstance(v, bool) else int(v) for k, v in flat.items()}
             )
+        options = {**DEFAULT_OPTIONS, **self.config_entry.options}
+        suggested = {k: v for k, v in options.items() if k not in IPV6_OPTIONS}
+        suggested[IPV6_SECTION] = {k: options[k] for k in IPV6_OPTIONS}
         return self.async_show_form(
             step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                OPTIONS_SCHEMA, {**DEFAULT_OPTIONS, **self.config_entry.options}
-            ),
+            data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, suggested),
         )
