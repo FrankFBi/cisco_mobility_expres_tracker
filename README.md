@@ -1,6 +1,8 @@
 # Cisco Mobility Express tracker for Home Assistant
 
-Presence detection for clients of a [Cisco Mobility Express](https://www.cisco.com/c/en/us/solutions/enterprise-networks/mobility-express/index.html) wireless controller.
+Presence detection for clients of a [Cisco Mobility Express](https://www.cisco.com/c/en/us/solutions/enterprise-networks/mobility-express/index.html) wireless controller **or a full Cisco Wireless LAN Controller (WLC)** running AireOS. Both use the same web API, so the integration works on either; on a WLC it also reads IP, SSID and band per client (see [Entities](#entities)).
+
+> **Disclaimer:** this is an independent community project. It is not affiliated with, endorsed by, sponsored by or in any way linked to Cisco Systems, Inc. Cisco, Mobility Express and related names are trademarks of Cisco Systems, Inc.
 
 This is a config-entry (UI) port of the core [`cisco_mobility_express`](https://www.home-assistant.io/integrations/cisco_mobility_express/) integration. That integration uses the legacy `device_tracker` platform API, which [is deprecated and will be removed in Home Assistant 2027.5](https://developers.home-assistant.io/blog/2026/04/20/legacy-device-tracker-deprecation/). This version uses the modern `ScannerEntity` API and keeps the same domain, so it replaces the core integration once installed.
 
