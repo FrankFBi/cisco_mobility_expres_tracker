@@ -77,7 +77,7 @@ Do these steps in this order:
    If it was the only entry, remove the `device_tracker:` line too.
 2. Install this integration and restart Home Assistant.
 3. Add it through the UI (Settings → Devices & services → Add integration) with the same host and credentials.
-4. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** unless its MAC address already belongs to a device from another integration. Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
+4. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** unless its MAC address already belongs to a device from another integration (see [Which trackers start enabled](#which-trackers-start-enabled)). Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
 
 ## Entities
 
@@ -94,6 +94,12 @@ On controllers with the classic AireOS web UI, such as a Cisco WLC, the client l
 | `FB` | Band from the client list's protocol column (e.g. `802.11ac(5 GHz)` → `5GHz`), only when the controller's client table doesn't report `FB` itself |
 
 Attributes the controller doesn't report are left out. The client list is read on every poll (one request for all clients). Mobility Express doesn't serve it as far as we know; the integration then stops asking after the first try. A client without a usable address in the list gets its own detail page request instead, at the IPv6 polling interval. That covers clients missing from the list (for example on a later page of a very large list) and IPv6-only clients for which the list only shows the link-local `fe80::` address. Controllers without these pages are tracked as before, without these attributes.
+
+### Which trackers start enabled
+
+New trackers start **disabled**, except when the client's MAC address already belongs to a device from another integration. Home Assistant then adds the tracker to that device and enables it. This is standard Home Assistant behaviour, the same as for other router integrations.
+
+For example, an ESPHome device such as a Home Assistant Voice registers its Wi-Fi MAC address on its own device. Its tracker therefore shows up enabled on the Voice device's page instead of as a separate device. If you don't want it, disable the tracker entity there. It stays disabled, and the cleanup below removes it once the client is no longer seen.
 
 ### Cleanup of unused trackers
 
