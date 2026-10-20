@@ -106,6 +106,16 @@ OPTIONS_SCHEMA = vol.Schema(
 )
 IPV6_OPTIONS = (CONF_ALL_IPV6, CONF_IPV6_POLLING_INTERVAL)
 
+RECONFIGURE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_HOST): str,
+        vol.Required(CONF_USERNAME): str,
+        vol.Optional(CONF_PASSWORD): str,
+        vol.Required(CONF_SSL): bool,
+        vol.Required(CONF_VERIFY_SSL): bool,
+    }
+)
+
 REAUTH_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_USERNAME): str,
@@ -161,6 +171,37 @@ class CiscoMEConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=self.add_suggested_values_to_schema(USER_SCHEMA, user_input),
+            errors=errors,
+        )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Change the host, credentials or SSL settings of a configured controller."""
+        errors: dict[str, str] = {}
+        entry = self._get_reconfigure_entry()
+        if user_input is not None:
+            user_input[CONF_HOST] = user_input[CONF_HOST].strip()
+            if not user_input.get(CONF_PASSWORD):
+                user_input[CONF_PASSWORD] = entry.data[CONF_PASSWORD]
+            unique_id = user_input[CONF_HOST].lower()
+            if any(
+                other.unique_id == unique_id
+                for other in self._async_current_entries(include_ignore=False)
+                if other.entry_id != entry.entry_id
+            ):
+                return self.async_abort(reason="already_configured")
+            data = {**entry.data, **user_input}
+            if not (error := await self._async_validate(data)):
+                return self.async_update_reload_and_abort(
+                    entry, unique_id=unique_id, title=data[CONF_HOST], data=data
+                )
+            errors["base"] = error
+
+        suggested = {k: v for k, v in (user_input or entry.data).items() if k != CONF_PASSWORD}
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(RECONFIGURE_SCHEMA, suggested),
             errors=errors,
         )
 

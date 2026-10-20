@@ -56,6 +56,10 @@ Click **Configure** on the integration's page to change these settings. Changes 
 | IPv6 › IPv6 polling interval | 1–15 min (5) | How often those detail pages are read. Only used when *Fetch all IPv6 addresses* is on. |
 | Remove disabled trackers after | 1–60 days (30) | See [Cleanup of unused trackers](#cleanup-of-unused-trackers). |
 
+### Changing the connection
+
+To change the host, username, password, *Use HTTPS* or *Verify SSL certificate*, open the integration's ⋮ menu and choose **Reconfigure**. Leave the password empty to keep the current one. The connection is tested before saving. Trackers, devices and options are kept, also when the host changes, because they are tied to the clients' MAC addresses.
+
 If the controller later rejects the credentials, Home Assistant prompts you to reauthenticate.
 
 ## Migrating from the YAML platform
