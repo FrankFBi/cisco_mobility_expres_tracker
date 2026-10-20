@@ -16,7 +16,14 @@ from custom_components.cisco_mobility_express.const import (
     DOMAIN,
 )
 from homeassistant.config_entries import SOURCE_USER
-from homeassistant.const import CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_PASSWORD,
+    CONF_SCAN_INTERVAL,
+    CONF_SSL,
+    CONF_USERNAME,
+    CONF_VERIFY_SSL,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 
@@ -159,3 +166,69 @@ async def test_reauth(
     assert result["reason"] == "reauth_successful"
     assert mock_config_entry.data[CONF_PASSWORD] == "new"
     await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_reconfigure(
+    hass: HomeAssistant, mock_controller: MagicMock, mock_config_entry: MockConfigEntry
+) -> None:
+    """Reconfigure changes host and SSL settings and keeps an empty password."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    assert result["step_id"] == "reconfigure"
+
+    mock_controller.side_effect = RequestsConnectionError
+    new = {
+        CONF_HOST: " 192.168.10.151 ",
+        CONF_USERNAME: "other",
+        CONF_SSL: True,
+        CONF_VERIFY_SSL: False,
+    }
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], new)
+    assert result["errors"] == {"base": "cannot_connect"}
+
+    mock_controller.side_effect = None
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], new)
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data == {
+        CONF_HOST: "192.168.10.151",
+        CONF_USERNAME: "other",
+        CONF_PASSWORD: "secret",
+        CONF_SSL: True,
+        CONF_VERIFY_SSL: False,
+    }
+    assert mock_config_entry.unique_id == "192.168.10.151"
+    assert mock_config_entry.title == "192.168.10.151"
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_reconfigure_password(
+    hass: HomeAssistant, mock_controller: MagicMock, mock_config_entry: MockConfigEntry
+) -> None:
+    """A new password replaces the stored one."""
+    mock_config_entry.add_to_hass(hass)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {**ENTRY_DATA, CONF_PASSWORD: "new"}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert mock_config_entry.data[CONF_PASSWORD] == "new"
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_reconfigure_to_existing_host(
+    hass: HomeAssistant, mock_controller: MagicMock, mock_config_entry: MockConfigEntry
+) -> None:
+    """The host cannot be changed to another configured controller."""
+    mock_config_entry.add_to_hass(hass)
+    other = MockConfigEntry(
+        domain=DOMAIN, unique_id="10.0.0.1", data={**ENTRY_DATA, CONF_HOST: "10.0.0.1"}
+    )
+    other.add_to_hass(hass)
+    result = await mock_config_entry.start_reconfigure_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {**ENTRY_DATA, CONF_HOST: "10.0.0.1"}
+    )
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+    assert mock_config_entry.data[CONF_HOST] == ENTRY_DATA[CONF_HOST]

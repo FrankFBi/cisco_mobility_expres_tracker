@@ -21,6 +21,24 @@
         },
         "description": "Connect to a Cisco Mobility Express or WLC controller. Every wireless client becomes a device tracker, disabled until you enable it."
       },
+      "reconfigure": {
+        "title": "Reconfigure the controller connection",
+        "description": "Change the host, credentials or HTTPS settings. The connection is tested before saving, and the integration reloads. Trackers, devices and their settings are kept.",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate"
+        },
+        "data_description": {
+          "host": "The IP address or hostname of your controller, for example 192.168.10.150.",
+          "username": "A user with administrative privileges.",
+          "ssl": "Connect over HTTPS. Turn off if the controller only accepts HTTP or uses old TLS settings.",
+          "verify_ssl": "Turn off if the controller uses a self-signed certificate.",
+          "password": "Leave empty to keep the current password."
+        }
+      },
       "reauth_confirm": {
         "title": "Reauthenticate",
         "description": "The controller at {host} rejected the stored credentials.",
@@ -37,7 +55,8 @@
     },
     "abort": {
       "already_configured": "This controller is already configured",
-      "reauth_successful": "Reauthentication was successful"
+      "reauth_successful": "Reauthentication was successful",
+      "reconfigure_successful": "The controller connection was updated"
     }
   },
   "entity": {
