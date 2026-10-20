@@ -10,13 +10,17 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from custom_components.cisco_mobility_express.client_details import parse_client_details
 from custom_components.cisco_mobility_express.const import (
+    CONF_DETAILS_INTERVAL,
     DETAILS_INTERVAL,
     DOMAIN,
     SCAN_INTERVAL,
 )
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
+from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+
+from .conftest import ENTRY_DATA
 
 DETAIL_HTML = (Path(__file__).parent / "fixtures" / "mobile_station_detail.html").read_text()
 LIST_HTML = '<INPUT TYPE="hidden" NAME="csrf_token" SIZE="32" VALUE="TOKEN">'
@@ -155,3 +159,30 @@ async def test_details_error_keeps_tracking(
     state = hass.states.get(ENTITY)
     assert state.state == "home"
     assert "ip" not in state.attributes
+
+
+async def test_details_interval_option(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """The details refresh interval comes from the entry options."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=ENTRY_DATA[CONF_HOST],
+        data=ENTRY_DATA,
+        options={CONF_DETAILS_INTERVAL: 1},
+    )
+    session = _detail_session(mock_controller)
+    await _setup(hass, entry)
+    assert session.post.call_count == 1
+
+    freezer.tick(SCAN_INTERVAL)
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert session.post.call_count == 1
+
+    freezer.tick(SCAN_INTERVAL)
+    async_fire_time_changed(hass)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert session.post.call_count == 2

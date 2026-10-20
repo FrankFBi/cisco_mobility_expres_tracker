@@ -41,7 +41,15 @@ Settings → Devices & services → Add integration → **Cisco Mobility Express
 | Verify SSL certificate | Turn off for self-signed certificates (default on) |
 | Polling interval | Seconds between polls of the client list, 30–300 (default 30) |
 
-To change the polling interval later, go to the integration's page and click **Configure**. The change applies at the next poll, without a restart. On large setups, a longer interval reduces the load on the controller, but trackers and sensors then react more slowly. IP and SSID details are still refreshed at most every 5 minutes per client.
+### Options
+
+Click **Configure** on the integration's page to change these settings. Changes apply without a restart.
+
+| Option | Range (default) | Description |
+| --- | --- | --- |
+| Polling interval | 30–300 s (30) | How often the client list is read. A longer interval reduces the load on large controllers, but trackers and sensors react more slowly. |
+| IP and SSID refresh interval | 1–15 min (5) | How often each connected client's detail page is read for `ip`, `ipv4`, `ipv6` and `SSID`. Costs one request per client. **Only used on a full WLC.** Mobility Express doesn't serve that page as far as we know; the integration then stops asking after the first try and this setting has no effect. |
+| Remove disabled trackers after | 1–60 days (30) | See [Cleanup of unused trackers](#cleanup-of-unused-trackers). |
 
 If the controller later rejects the credentials, Home Assistant prompts you to reauthenticate.
 
@@ -64,11 +72,11 @@ On controllers with the classic AireOS client detail page, such as a Cisco WLC, 
 | `ipv6` | All IPv6 addresses, including link-local |
 | `SSID` | WLAN SSID |
 
-Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes. Controllers without that page are tracked as before, without these attributes.
+Attributes the controller doesn't report are left out. Details are fetched when a client connects and then every 5 minutes (see *IP and SSID refresh interval* under [Options](#options)). Controllers without that page are tracked as before, without these attributes.
 
 ### Cleanup of unused trackers
 
-A **disabled** tracker is deleted once its client hasn't been seen on the controller for 30 days. If that client connects again, it gets a new tracker, which starts disabled like any new client. Enabled trackers are never deleted. Disabled trackers that existed before this feature start their 30 days when you install it.
+A **disabled** tracker is deleted once its client hasn't been seen on the controller for 30 days (see *Remove disabled trackers after* under [Options](#options)). If that client connects again, it gets a new tracker, which starts disabled like any new client. Enabled trackers are never deleted. Disabled trackers that existed before this feature start counting when you install it.
 
 ### Devices
 

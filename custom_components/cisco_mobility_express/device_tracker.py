@@ -18,9 +18,8 @@ from .const import (
     DOMAIN,
     IP_ADDRESS_KEYS,
     PRUNE_INTERVAL,
-    STALE_TRACKER_AGE,
 )
-from .coordinator import CiscoMEConfigEntry, CiscoMEDataUpdateCoordinator
+from .coordinator import CiscoMEConfigEntry, CiscoMEDataUpdateCoordinator, stale_tracker_age
 
 LAST_SEEN_SAVE_DELAY = 60
 
@@ -69,18 +68,19 @@ async def async_setup_entry(
 
     @callback
     def async_prune_stale_trackers(_: datetime | None = None) -> None:
-        """Remove disabled trackers of clients not seen for STALE_TRACKER_AGE.
+        """Remove disabled trackers of clients not seen for the stale tracker age.
 
         A removed client is no longer in `tracked`, so it gets a new tracker
         when it connects again. Clients seen before this ran start counting now.
         """
         now = dt_util.utcnow().timestamp()
+        max_age = stale_tracker_age(entry).total_seconds()
         registry = er.async_get(hass)
         for reg_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
             if reg_entry.platform != DOMAIN or not reg_entry.disabled:
                 continue
             mac = reg_entry.unique_id
-            if now - last_seen.setdefault(mac, now) > STALE_TRACKER_AGE.total_seconds():
+            if now - last_seen.setdefault(mac, now) > max_age:
                 registry.async_remove(reg_entry.entity_id)
                 tracked.discard(mac)
                 del last_seen[mac]

@@ -17,7 +17,15 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .client_details import ClientDetailsUnavailable, fetch_client_details
-from .const import ATTR_MAC, DETAILS_INTERVAL, DOMAIN, SCAN_INTERVAL
+from .const import (
+    ATTR_MAC,
+    CONF_DETAILS_INTERVAL,
+    CONF_STALE_TRACKER_AGE,
+    DETAILS_INTERVAL,
+    DOMAIN,
+    SCAN_INTERVAL,
+    STALE_TRACKER_AGE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,6 +45,18 @@ CONNECTION_ERRORS = (
 def scan_interval(entry: ConfigEntry) -> timedelta:
     """Return the polling interval chosen for the entry."""
     return timedelta(seconds=entry.options.get(CONF_SCAN_INTERVAL, SCAN_INTERVAL.total_seconds()))
+
+
+def details_interval(entry: ConfigEntry) -> timedelta:
+    """Return how often each client's IP and SSID details are refreshed."""
+    return timedelta(
+        minutes=entry.options.get(CONF_DETAILS_INTERVAL, DETAILS_INTERVAL.total_seconds() / 60)
+    )
+
+
+def stale_tracker_age(entry: ConfigEntry) -> timedelta:
+    """Return how long a disabled tracker's client may be unseen before removal."""
+    return timedelta(days=entry.options.get(CONF_STALE_TRACKER_AGE, STALE_TRACKER_AGE.days))
 
 
 class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any]]]):
@@ -84,13 +104,14 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
         return clients
 
     async def _async_update_details(self, clients: dict[str, dict[str, Any]]) -> None:
-        """Merge IP and SSID details, refreshing each client every DETAILS_INTERVAL."""
+        """Merge IP and SSID details, refreshing each client every details interval."""
         now = dt_util.utcnow()
+        refresh = details_interval(self.config_entry)
         self._details = {mac: d for mac, d in self._details.items() if mac in clients}
         due = [
             mac
             for mac in clients
-            if mac not in self._details or now - self._details[mac][0] >= DETAILS_INTERVAL
+            if mac not in self._details or now - self._details[mac][0] >= refresh
         ]
         if due:
             try:

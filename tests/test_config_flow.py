@@ -8,7 +8,11 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
-from custom_components.cisco_mobility_express.const import DOMAIN
+from custom_components.cisco_mobility_express.const import (
+    CONF_DETAILS_INTERVAL,
+    CONF_STALE_TRACKER_AGE,
+    DOMAIN,
+)
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -59,12 +63,29 @@ async def test_options_flow(
         await hass.config_entries.options.async_configure(
             result["flow_id"], {CONF_SCAN_INTERVAL: 301}
         )
+    for invalid in (
+        {CONF_DETAILS_INTERVAL: 0},
+        {CONF_DETAILS_INTERVAL: 16},
+        {CONF_STALE_TRACKER_AGE: 0},
+        {CONF_STALE_TRACKER_AGE: 61},
+    ):
+        with pytest.raises(InvalidData):
+            await hass.config_entries.options.async_configure(
+                result["flow_id"],
+                {CONF_SCAN_INTERVAL: 30, CONF_DETAILS_INTERVAL: 5, CONF_STALE_TRACKER_AGE: 30}
+                | invalid,
+            )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {CONF_SCAN_INTERVAL: 300}
+        result["flow_id"],
+        {CONF_SCAN_INTERVAL: 300, CONF_DETAILS_INTERVAL: 15, CONF_STALE_TRACKER_AGE: 60},
     )
     await hass.async_block_till_done()
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert mock_config_entry.options == {CONF_SCAN_INTERVAL: 300}
+    assert mock_config_entry.options == {
+        CONF_SCAN_INTERVAL: 300,
+        CONF_DETAILS_INTERVAL: 15,
+        CONF_STALE_TRACKER_AGE: 60,
+    }
     assert mock_config_entry.runtime_data.update_interval == timedelta(seconds=300)
 
 
