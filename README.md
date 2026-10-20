@@ -72,6 +72,7 @@ On controllers with the classic AireOS web UI, such as a Cisco WLC, the client l
 | `ipv4` | IPv4 address |
 | `ipv6` | IPv6 address from the client list; with *Fetch all IPv6 addresses* on, all IPv6 addresses including link-local |
 | `SSID` | WLAN SSID |
+| `FB` | Band from the client list's protocol column (e.g. `802.11ac(5 GHz)` → `5GHz`), only when the controller's client table doesn't report `FB` itself |
 
 Attributes the controller doesn't report are left out. The client list is read on every poll (one request for all clients). Mobility Express doesn't serve it as far as we know; the integration then stops asking after the first try. A client without a usable address in the list gets its own detail page request instead, at the IPv6 polling interval. That covers clients missing from the list (for example on a later page of a very large list) and IPv6-only clients for which the list only shows the link-local `fe80::` address. Controllers without these pages are tracked as before, without these attributes.
 
