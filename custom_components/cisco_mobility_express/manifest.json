@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/FrankFBi/cisco_mobility_expres_tracker/issues",
   "loggers": ["ciscomobilityexpress"],
   "requirements": ["ciscomobilityexpress>=0.3.9"],
-  "version": "1.0.0"
+  "version": "1.4.0"
 }
