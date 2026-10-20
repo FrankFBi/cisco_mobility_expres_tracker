@@ -286,3 +286,24 @@ async def test_all_ipv6_option(
         "fddb:0:104:28:9627:70ff:fed0:975",
         "fe80::9627:70ff:fed0:975",
     ]
+
+
+async def test_link_local_only_uses_detail_page(
+    hass: HomeAssistant,
+    mock_controller: MagicMock,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """An IPv6-only client listed with just fe80:: gets its global address."""
+    session = _detail_session(mock_controller)
+    session.get.return_value = MagicMock(
+        status_code=200, text=LIST_HTML + _list_row(0, "94:27:70:d0:09:75", "fe80::1")
+    )
+    session.post.return_value = MagicMock(
+        status_code=200, text=_with("0.0.0.0", "fe80::1, 2001:db8::5, ")
+    )
+    await _setup(hass, mock_config_entry)
+
+    assert session.post.call_count == 1
+    state = hass.states.get(ENTITY)
+    assert state.attributes["ip"] == "2001:db8::5"
+    assert state.attributes["ipv6"] == ["fe80::1", "2001:db8::5"]

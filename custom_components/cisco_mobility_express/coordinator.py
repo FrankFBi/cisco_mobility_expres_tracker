@@ -16,7 +16,7 @@ from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .client_details import ClientDetailsUnavailable, fetch_client_details
+from .client_details import ClientDetailsUnavailable, fetch_client_details, needs_detail_page
 from .const import (
     ATTR_MAC,
     CONF_ALL_IPV6,
@@ -137,7 +137,7 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
 
         for mac, client in clients.items():
             details = self._listed.get(mac, {})
-            if (all_ipv6 or not details) and mac in self._details:
+            if (all_ipv6 or needs_detail_page(details)) and mac in self._details:
                 details = self._details[mac][1]
             for key, value in details.items():
                 client.setdefault(key, value)
