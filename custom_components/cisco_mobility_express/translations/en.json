@@ -69,7 +69,7 @@
         },
         "data_description": {
           "scan_interval": "How often the controller is asked for its clients, in seconds (30–300). Each poll also reads the client list for the ip, ipv4 and SSID attributes. Increase it on large setups to reduce the load on the controller.",
-          "stale_tracker_age": "Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again."
+          "stale_tracker_age": "How many days disabled MAC entities stay available. Disabled trackers of clients not seen for this many days are deleted (1–60). They are recreated, disabled, when the client connects again."
         },
         "description": "Settings that limit the load on the controller. Changes apply immediately, without a restart.",
         "sections": {
