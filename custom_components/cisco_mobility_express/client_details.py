@@ -25,6 +25,9 @@ _LIST_FIELD = re.compile(
     r'name="\d+\.(\d+)\.\d+\.(ms_addr|ms_ipaddr|ms_ssid|dot11_type)"[^>]*value="([^"]*)"',
     re.IGNORECASE,
 )
+_TOTAL_ENTRIES = re.compile(r'name="total_entries"[^>]*value="(\d+)"', re.IGNORECASE)
+# Never read more than this many list pages (75 clients each on AireOS) per poll.
+MAX_LIST_PAGES = 20
 # The list's protocol column holds the band, e.g. "802.11n(2.4 GHz)".
 _BAND = re.compile(r"\(\s*([\d.]+)\s*GHz\s*\)", re.IGNORECASE)
 
@@ -111,7 +114,8 @@ def fetch_client_details(
 ) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     """Fetch the client list, plus detail pages for the given MACs (blocking).
 
-    One request for the client list covers every listed client. A client's
+    The client list is paged (75 clients per page on AireOS); every page is read,
+    one request each, so it covers every connected client. A client's
     detail page is only requested when the list has no usable address for it
     (missing, or IPv6 link-local only) or when
     all_ipv6 is set, as only that page lists every IPv6 address.
@@ -125,6 +129,16 @@ def fetch_client_details(
         raise ClientDetailsUnavailable(f"{list_url} returned HTTP {response.status_code}")
 
     listed = parse_client_list(response.text)
+    page_size = len(listed)
+    total = int(m.group(1)) if (m := _TOTAL_ENTRIES.search(response.text)) else 0
+    if page_size and total > page_size:
+        pages = min(-(-total // page_size), MAX_LIST_PAGES)
+        for page in range(2, pages + 1):
+            response = session.get(list_url, params={"pgInd": page})
+            if response.status_code != 200:
+                _LOGGER.debug("Client list page %s returned HTTP %s", page, response.status_code)
+                break
+            listed.update(parse_client_list(response.text))
     results: dict[str, dict[str, Any]] = {}
     for mac in macs if all_ipv6 else [mac for mac in macs if needs_detail_page(listed.get(mac))]:
         response = session.post(
