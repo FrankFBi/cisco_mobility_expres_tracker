@@ -28,6 +28,20 @@ class CiscoMESensorEntityDescription(SensorEntityDescription):
 
     field: str
     value_fn: Callable[[Any], Any] = lambda value: value
+    icon_fn: Callable[[Any], str | None] | None = None
+
+
+def _signal_icon(value: Any) -> str | None:
+    """Return a Wi-Fi strength icon: good from -65 dBm, fair to -80, weak below."""
+    try:
+        dbm = float(value)
+    except (TypeError, ValueError):
+        return None
+    if dbm >= -65:
+        return "mdi:wifi-strength-4"
+    if dbm >= -80:
+        return "mdi:wifi-strength-2"
+    return "mdi:wifi-strength-1"
 
 
 def _join_addresses(addresses: list[str] | None) -> str | None:
@@ -51,6 +65,7 @@ SENSORS = (
         device_class=SensorDeviceClass.SIGNAL_STRENGTH,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+        icon_fn=_signal_icon,
     ),
 )
 
@@ -108,3 +123,12 @@ class CiscoMEClientSensor(CoordinatorEntity[CiscoMEDataUpdateCoordinator], Senso
         if client := self.coordinator.data.get(self._mac):
             return self.entity_description.value_fn(client.get(self.entity_description.field))
         return None
+
+    @property
+    def icon(self) -> str | None:
+        """Return a value-dependent icon where the description has one."""
+        if self.entity_description.icon_fn and (
+            icon := self.entity_description.icon_fn(self.native_value)
+        ):
+            return icon
+        return super().icon
