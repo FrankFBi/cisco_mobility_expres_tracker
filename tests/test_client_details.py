@@ -9,6 +9,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry, async_
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from custom_components.cisco_mobility_express.client_details import (
+    fetch_client_details,
     parse_client_details,
     parse_client_list,
 )
@@ -334,3 +335,40 @@ async def test_link_local_only_uses_detail_page(
     state = hass.states.get(ENTITY)
     assert state.attributes["ip"] == "2001:db8::5"
     assert state.attributes["ipv6"] == ["fe80::1", "2001:db8::5"]
+
+
+def _total(count: int) -> str:
+    return f'<INPUT type="hidden" name="total_entries" VALUE="{count}">'
+
+
+def test_client_list_pages() -> None:
+    """Every page of a paged client list is read, one GET per page."""
+    pages = {
+        None: LIST_HTML
+        + _total(3)
+        + _list_row(0, "aa:aa:aa:aa:aa:01", "10.0.0.1")
+        + _list_row(1, "aa:aa:aa:aa:aa:02", "10.0.0.2"),
+        2: LIST_HTML + _total(3) + _list_row(0, "aa:aa:aa:aa:aa:03", "10.0.0.3"),
+    }
+    session = MagicMock()
+    session.get.side_effect = lambda url, params=None: MagicMock(
+        status_code=200, text=pages[(params or {}).get("pgInd")]
+    )
+    listed, details = fetch_client_details(session, "http://wlc", [])
+    assert {mac: d["ip"] for mac, d in listed.items()} == {
+        "aa:aa:aa:aa:aa:01": "10.0.0.1",
+        "aa:aa:aa:aa:aa:02": "10.0.0.2",
+        "aa:aa:aa:aa:aa:03": "10.0.0.3",
+    }
+    assert session.get.call_count == 2
+    assert session.get.call_args.kwargs["params"] == {"pgInd": 2}
+    assert details == {}
+
+
+def test_client_list_single_page() -> None:
+    """A list that fits on one page costs one request."""
+    session = MagicMock()
+    session.get.return_value = MagicMock(status_code=200, text=LISTED_HTML + _total(2))
+    listed, _ = fetch_client_details(session, "http://wlc", [])
+    assert len(listed) == 2
+    assert session.get.call_count == 1
