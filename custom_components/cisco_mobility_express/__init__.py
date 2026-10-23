@@ -14,7 +14,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .const import PLATFORMS
+from .const import CONF_ALL_IPV6, PLATFORMS
 from .coordinator import (
     CONNECTION_ERRORS,
     CiscoMEConfigEntry,
@@ -56,8 +56,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> b
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Apply a changed polling interval without reloading."""
-    entry.runtime_data.update_interval = scan_interval(entry)
+    """Apply a changed polling interval; reload to add or remove the IPv6 sensors."""
+    coordinator = entry.runtime_data
+    coordinator.update_interval = scan_interval(entry)
+    if entry.options.get(CONF_ALL_IPV6, False) != coordinator.all_ipv6_at_setup:
+        hass.config_entries.async_schedule_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: CiscoMEConfigEntry) -> bool:

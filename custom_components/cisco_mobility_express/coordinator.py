@@ -82,6 +82,7 @@ class CiscoMEDataUpdateCoordinator(DataUpdateCoordinator[dict[str, dict[str, Any
             update_interval=scan_interval(config_entry),
         )
         self.controller = controller
+        self.all_ipv6_at_setup = config_entry.options.get(CONF_ALL_IPV6, False)
         self._details_supported = True
         self._listed: dict[str, dict[str, Any]] = {}
         self._details: dict[str, tuple[datetime, dict[str, Any]]] = {}

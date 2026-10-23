@@ -75,6 +75,12 @@
       },
       "band": {
         "name": "Band"
+      },
+      "signal_strength": {
+        "name": "Signal strength"
+      },
+      "ipv6": {
+        "name": "IPv6 addresses"
       }
     }
   },
@@ -100,7 +106,7 @@
               "ipv6_polling_interval": "IPv6 polling interval"
             },
             "data_description": {
-              "all_ipv6": "Off (default): the ipv6 attribute only holds an IPv6-only client's address from the client list. On: each client's detail page is also read for all its IPv6 addresses, including link-local. That costs one extra request per client, so leave it off on large setups unless you need it.",
+              "all_ipv6": "Off (default): the ipv6 attribute only holds an IPv6-only client's address from the client list. On: each client's detail page is also read for all its IPv6 addresses, including link-local, and each enabled tracker's device gets an IPv6 addresses sensor. That costs one extra request per client, so leave it off on large setups unless you need it.",
               "ipv6_polling_interval": "How often each client's detail page is read for its IPv6 addresses, in minutes (1–15). Only used when Fetch all IPv6 addresses is on."
             }
           }

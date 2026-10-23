@@ -109,7 +109,7 @@ A **disabled** tracker is deleted once its client hasn't been seen on the contro
 
 ### Devices
 
-Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`) and *Band* (`FB`). They are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
+Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`), *Band* (`FB`) and *Signal strength* (`SS`, in dBm). With *Fetch all IPv6 addresses* on, there is also an *IPv6 addresses* sensor with the comma-separated list (cut off at 255 characters, the longest state Home Assistant allows; the `ipv6` attribute keeps the full list). Turning that option on or off reloads the integration to add or remove it. The sensors are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
 
 ### Locating a person by access point
 
