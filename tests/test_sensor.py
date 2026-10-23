@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.cisco_mobility_express.const import CONF_ALL_IPV6, DOMAIN
-from custom_components.cisco_mobility_express.sensor import _join_addresses
+from custom_components.cisco_mobility_express.sensor import _join_addresses, _signal_icon
 from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN, SensorDeviceClass
 from homeassistant.const import SIGNAL_STRENGTH_DECIBELS_MILLIWATT, EntityCategory
@@ -111,6 +111,7 @@ async def test_signal_strength_sensor(
     assert state.state == "-52"
     assert state.attributes["unit_of_measurement"] == SIGNAL_STRENGTH_DECIBELS_MILLIWATT
     assert state.attributes["device_class"] == SensorDeviceClass.SIGNAL_STRENGTH
+    assert state.attributes["icon"] == "mdi:wifi-strength-4"
     assert not _sensor_state(hass, PHONE_MAC, "ipv6")
 
 
@@ -140,3 +141,13 @@ def test_join_addresses_limit() -> None:
     assert len(joined) <= 255
     assert joined.split(", ") == addresses[: len(joined.split(", "))]
     assert _join_addresses([]) is None
+
+
+def test_signal_icon_thresholds() -> None:
+    """The icon follows the -65 and -80 dBm thresholds."""
+    assert _signal_icon(-52) == "mdi:wifi-strength-4"
+    assert _signal_icon(-65) == "mdi:wifi-strength-4"
+    assert _signal_icon("-70") == "mdi:wifi-strength-2"
+    assert _signal_icon(-80) == "mdi:wifi-strength-2"
+    assert _signal_icon(-81) == "mdi:wifi-strength-1"
+    assert _signal_icon(None) is None
