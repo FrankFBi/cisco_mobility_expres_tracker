@@ -3,9 +3,10 @@
 from datetime import datetime
 from typing import Any
 
-from homeassistant.components.device_tracker import ScannerEntity
+from homeassistant.components.device_tracker import DOMAIN as DEVICE_TRACKER_DOMAIN, ScannerEntity
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
@@ -41,10 +42,19 @@ async def async_setup_entry(
     # Restore clients seen before that are not currently associated.
     restored: list[CiscoMEClient] = []
     for reg_entry in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id):
-        if reg_entry.platform == DOMAIN and reg_entry.unique_id not in tracked:
+        if (
+            reg_entry.domain == DEVICE_TRACKER_DOMAIN
+            and reg_entry.platform == DOMAIN
+            and reg_entry.unique_id not in tracked
+        ):
             tracked.add(reg_entry.unique_id)
             restored.append(
-                CiscoMEClient(coordinator, reg_entry.unique_id, reg_entry.original_name)
+                CiscoMEClient(
+                    coordinator,
+                    reg_entry.unique_id,
+                    reg_entry.original_name,
+                    has_device=not reg_entry.disabled,
+                )
             )
     async_add_entities(restored)
 
@@ -77,7 +87,11 @@ async def async_setup_entry(
         max_age = stale_tracker_age(entry).total_seconds()
         registry = er.async_get(hass)
         for reg_entry in er.async_entries_for_config_entry(registry, entry.entry_id):
-            if reg_entry.platform != DOMAIN or not reg_entry.disabled:
+            if (
+                reg_entry.domain != DEVICE_TRACKER_DOMAIN
+                or reg_entry.platform != DOMAIN
+                or not reg_entry.disabled
+            ):
                 continue
             mac = reg_entry.unique_id
             if now - last_seen.setdefault(mac, now) > max_age:
@@ -109,10 +123,18 @@ class CiscoMEClient(CoordinatorEntity[CiscoMEDataUpdateCoordinator], ScannerEnti
         coordinator: CiscoMEDataUpdateCoordinator,
         mac: str,
         name: str | None,
+        has_device: bool = False,
     ) -> None:
-        """Initialize the client entity."""
+        """Initialize the client entity.
+
+        Only enabled trackers have a device (see devices.py); an empty DeviceInfo
+        keeps Home Assistant 2026.11+ from creating one for every disabled tracker.
+        """
         super().__init__(coordinator)
         self._attr_mac_address = mac
+        self._attr_device_info = (
+            DeviceInfo(connections={(CONNECTION_NETWORK_MAC, mac)}) if has_device else DeviceInfo()
+        )
         self._last_name = name or None
 
     @property
