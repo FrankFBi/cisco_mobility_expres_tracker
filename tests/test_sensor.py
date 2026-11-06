@@ -91,6 +91,49 @@ async def test_device_removed_when_tracker_disabled(
     assert not dr.async_get(hass).async_get_device_by_connection(
         (dr.CONNECTION_NETWORK_MAC, PHONE_MAC), mock_config_entry.entry_id
     )
+    tracker = entities.async_get_entity_id(DEVICE_TRACKER_DOMAIN, DOMAIN, PHONE_MAC)
+    assert entities.async_get(tracker).device_id is None
+
+
+def _tracker_ids(hass: HomeAssistant, entry: MockConfigEntry) -> set[str]:
+    return {
+        reg.unique_id
+        for reg in er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
+        if reg.domain == DEVICE_TRACKER_DOMAIN
+    }
+
+
+async def test_no_trackers_for_sensor_entries(
+    hass: HomeAssistant, mock_controller: MagicMock, mock_config_entry: MockConfigEntry
+) -> None:
+    """Sensor registry entries are not restored as trackers; earlier ones are removed."""
+    mock_config_entry.add_to_hass(hass)
+    _register_trackers(hass, mock_config_entry)
+    phantom_mac = f"{PHONE_MAC}_access_point"
+    devices = dr.async_get(hass)
+    phantom_device = devices.async_get_or_create(
+        config_entry_id=mock_config_entry.entry_id,
+        connections={(dr.CONNECTION_NETWORK_MAC, phantom_mac)},
+    )
+    er.async_get(hass).async_get_or_create(
+        DEVICE_TRACKER_DOMAIN,
+        DOMAIN,
+        phantom_mac,
+        config_entry=mock_config_entry,
+        device_id=phantom_device.id,
+        disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    )
+    await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+    await hass.config_entries.async_reload(mock_config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert _tracker_ids(hass, mock_config_entry) == {PHONE_MAC, LAPTOP.macaddr}
+    assert not devices.async_get(phantom_device.id)
+    assert [
+        d.connections
+        for d in dr.async_entries_for_config_entry(devices, mock_config_entry.entry_id)
+    ] == [{(dr.CONNECTION_NETWORK_MAC, PHONE_MAC)}]
 
 
 WlcDevice = namedtuple("WlcDevice", ["macaddr", "clId", "SS", "ipv6"])

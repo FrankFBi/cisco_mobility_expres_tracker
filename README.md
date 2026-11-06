@@ -79,7 +79,7 @@ Do these steps in this order:
    If it was the only entry, remove the `device_tracker:` line too.
 2. Install this integration and restart Home Assistant.
 3. Add it through the UI (Settings → Devices & services → Add integration) with the same host and credentials.
-4. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** unless its MAC address already belongs to a device from another integration (see [Which trackers start enabled](#which-trackers-start-enabled)). Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
+4. Tracked clients now show up as `device_tracker` entities on the integration. Like every modern router tracker, an entity is **disabled by default** (see [Which trackers start enabled](#which-trackers-start-enabled)). Enable the ones you want and assign them to a person. Old entries in `known_devices.yaml` are no longer used.
 
 ## Entities
 
@@ -99,9 +99,9 @@ Attributes the controller doesn't report are left out. The client list is read o
 
 ### Which trackers start enabled
 
-New trackers start **disabled**, except when the client's MAC address already belongs to a device from another integration. Home Assistant then adds the tracker to that device and enables it. This is standard Home Assistant behaviour, the same as for other router integrations.
+New trackers start **disabled**. This is standard Home Assistant behaviour, the same as for other router integrations.
 
-For example, an ESPHome device such as a Home Assistant Voice registers its Wi-Fi MAC address on its own device. Its tracker therefore shows up enabled on the Voice device's page instead of as a separate device. If you don't want it, disable the tracker entity there. It stays disabled, and the cleanup below removes it once the client is no longer seen.
+Before Home Assistant 2026.11 there is one exception: when the client's MAC address already belongs to a device from another integration, Home Assistant adds the tracker to that device and enables it. For example, an ESPHome device such as a Home Assistant Voice registers its Wi-Fi MAC address on its own device. Its tracker therefore shows up enabled on the Voice device's page instead of as a separate device. If you don't want it, disable the tracker entity there. It stays disabled, and the cleanup below removes it once the client is no longer seen.
 
 ### Cleanup of unused trackers
 
@@ -109,7 +109,7 @@ A **disabled** tracker is deleted once its client hasn't been seen on the contro
 
 ### Devices
 
-Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`), *Band* (`FB`) and *Signal strength* (`SS`, in dBm; its icon shows full Wi-Fi bars from -65 dBm, half bars from -80 to -65 dBm, and one bar below -80 dBm). With *Fetch all IPv6 addresses* on, there is also an *IPv6 addresses* sensor with the comma-separated list (cut off at 255 characters, the longest state Home Assistant allows; the `ipv6` attribute keeps the full list). Turning that option on or off reloads the integration to add or remove it. The sensors are `unknown` while the client is disconnected. Disabled trackers get no device. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
+Every **enabled** tracker gets a device, named after the tracker, with the client's MAC as its connection. The device has these diagnostic sensors: *IPv4 address*, *Access point* (`AP`), *SSID*, *Protocol* (`PT`), *Band* (`FB`) and *Signal strength* (`SS`, in dBm; its icon shows full Wi-Fi bars from -65 dBm, half bars from -80 to -65 dBm, and one bar below -80 dBm). With *Fetch all IPv6 addresses* on, there is also an *IPv6 addresses* sensor with the comma-separated list (cut off at 255 characters, the longest state Home Assistant allows; the `ipv6` attribute keeps the full list). Turning that option on or off reloads the integration to add or remove it. The sensors are `unknown` while the client is disconnected. Disabled trackers get no device, also on Home Assistant 2026.11 and later, which would otherwise create one for every tracker. Devices that were created that way, and stray trackers named after a sensor (e.g. `…_ACCESS_POINT`), are removed when the integration starts. Home Assistant reloads the integration about 30 seconds after you enable or disable a tracker, and that reload adds or removes the device.
 
 ### Locating a person by access point
 
